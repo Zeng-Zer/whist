@@ -35,8 +35,7 @@ public class GameEngine {
 
         if (masterTrump.equals(Trump.NOTHING)) {
             masterTrump = Trump.HEART;
-        }
-        else {
+        } else {
             masterTrump = Trump.values()[indexTrump + 1];
         }
 
@@ -46,7 +45,7 @@ public class GameEngine {
 
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 13; ++j) {
-                deck.add(new Card(Trump.values()[i] , Value.values()[j]));
+                deck.add(new Card(Trump.values()[i], Value.values()[j]));
             }
         }
 
@@ -55,29 +54,22 @@ public class GameEngine {
     }
 
     public void resetGame() {
-        masterTrump = Trump.NOTHING;
-        players.clear();
-
-        for (int i = 1; i < 5; ++i) {
-            players.add(new Player("p" + i));
-        }
-        resetRound();
+	    masterTrump = Trump.NOTHING;
+	    players.clear();
+	    for (int i = 1; i < 5; ++i) {
+	     players.add(new Player("p" + i));
+	    }
+	    resetRound();
     }
 
     private void distribute() {
-        for (int i = 0; i < 4; ++i) {
-            players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
-        }
-        /*for (Player player : players) {
-            System.out.println();
-            for (Card card : player.getDeck()) {
-                System.out.println(card);
-            }
-        }*/
+	    for (int i = 0; i < 4; ++i) {
+	     players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
+	    }
     }
 
-    public boolean isRunning() {
-        return (players.get(0).score + players.get(2).score == 7)
-                || (players.get(1).score + players.get(3).score == 7);
-    }
+    public boolean isRunning () {
+	    return (players.get(0).score + players.get(2).score == 7)
+	     || (players.get(1).score + players.get(3).score == 7);
+        }
 }

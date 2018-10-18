@@ -6,6 +6,7 @@ import java.util.List;
 public class Player {
     private List<Card> deck = new ArrayList<>();
     private String name;
+
     public int points = 0;
     public int score = 0;
 
@@ -39,12 +40,12 @@ public class Player {
     }
 
     public Card play(Trump roundTrump) {
-        int i = (int)(Math.random() * 13);
+        int i = (int) (Math.random() * 13);
         Card randomCard = deck.get(i);
 
         if (isTrumpInDeck(roundTrump)) {
             while (!randomCard.getTrump().equals(roundTrump)) {
-                i = (int)(Math.random() * 13);
+                i = (int) (Math.random() * 13);
                 randomCard = deck.get(i);
             }
         }

@@ -6,7 +6,7 @@ public class Whist {
         GameEngine engine = new GameEngine();
 
 //        while (engine.isRunning()) {
-            engine.playRound();
+        engine.playRound();
 //        }
     }
 }
