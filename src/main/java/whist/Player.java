@@ -6,13 +6,16 @@ import java.util.List;
 public class Player {
     private List<Card> deck = new ArrayList<>();
     private String name;
-    private boolean hand = false;
+    // team id
+    private int team;
+    // points in the round
+    private int points = 0;
+    private int index;
 
-    public int points = 0;
-    public int score = 0;
-
-    public Player(String name) {
+    public Player(String name, int id) {
         this.name = name;
+        this.team = id % 2;
+        this.index = id;
     }
 
     public List<Card> getDeck() {
@@ -27,8 +30,20 @@ public class Player {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public int getTeam() {
+        return team;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     private boolean isTrumpInDeck(Trump trump) {
@@ -41,23 +56,15 @@ public class Player {
     }
 
     public Card play(Trump roundTrump) {
-        int i = (int) (Math.random() * 13);
+        int i = (int) (Math.random() * deck.size());
         Card randomCard = deck.get(i);
 
         if (isTrumpInDeck(roundTrump)) {
             while (!randomCard.getTrump().equals(roundTrump)) {
-                i = (int) (Math.random() * 13);
+                i = (int) (Math.random() * deck.size());
                 randomCard = deck.get(i);
             }
         }
         return deck.remove(i);
-    }
-
-    public boolean gotHand() {
-        return hand;
-    }
-
-    public void setHand(boolean hand) {
-        this.hand = hand;
     }
 }
