@@ -18,25 +18,30 @@ public class GameEngine {
 
     public void playRound() {
         Card cardPlayed;
-        int turn = 0;
+        Player player;
+        int i = whoHasTheHand();
 
-        for (Player player : players) {
+        for (int turn = 0; turn < 4; ++turn) {
+            player = players.get(i);
             player.setHand(false);
             cardPlayed = player.play(roundTrump);
             if (turn == 0 || cardIsStronger(cardPlayed)) {
                 roundTrump = cardPlayed.getTrump();
                 strongestCard = cardPlayed;
+                for (Player p : players)
+                 p.setHand(false);
                 player.setHand(true);
             }
-            turn++;
+            i = (i + 1) % 4;
             System.out.println(player.getName() + " has played " + cardPlayed + " - decksize: " + player.getDeck().size());
         }
-        System.out.println("Strongest: " + strongestCard);
+        System.out.println(players.get(whoHasTheHand()).getName() + " won the round with " + strongestCard.getValue());
     }
 
     public void resetRound() {
         int indexTrump = masterTrump.ordinal();
 
+        //Change MasterTrump following the round
         if (masterTrump.equals(Trump.NOTHING)) {
             masterTrump = Trump.HEART;
         } else {
@@ -47,12 +52,14 @@ public class GameEngine {
             players.get(i).points = 0;
         }
 
+        //Create deck
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 13; ++j) {
                 deck.add(new Card(Trump.values()[i], Value.values()[j]));
             }
         }
-
+        //Set hand to a random player
+        players.get((int) (Math.random() * 4)).setHand(true);
         Collections.shuffle(deck);
         distribute();
     }
@@ -67,9 +74,21 @@ public class GameEngine {
     }
 
     private void distribute() {
+        //split deck
 	    for (int i = 0; i < 4; ++i) {
 	     players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
 	    }
+    }
+
+    private int whoHasTheHand() {
+        //find the player who had to play
+        for (int i = 0; i < players.size(); ++i) {
+            if (players.get(i).gotHand()) {
+                return i;
+            }
+        }
+        System.out.println("HERE");
+        return -1;
     }
 
     private boolean cardIsStronger(Card card) {
