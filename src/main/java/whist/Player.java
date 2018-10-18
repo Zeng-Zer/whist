@@ -6,6 +6,7 @@ import java.util.List;
 public class Player {
     private List<Card> deck = new ArrayList<>();
     private String name;
+    private boolean hand = false;
 
     public int points = 0;
     public int score = 0;
@@ -50,5 +51,13 @@ public class Player {
             }
         }
         return deck.remove(i);
+    }
+
+    public boolean gotHand() {
+        return hand;
+    }
+
+    public void setHand(boolean hand) {
+        this.hand = hand;
     }
 }

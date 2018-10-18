@@ -10,6 +10,7 @@ public class GameEngine {
 
     private List<Player> players = new ArrayList<>();
     private List<Card> deck = new ArrayList<>();
+    private Card strongestCard;
 
     GameEngine() {
         resetGame();
@@ -20,14 +21,17 @@ public class GameEngine {
         int turn = 0;
 
         for (Player player : players) {
-
+            player.setHand(false);
             cardPlayed = player.play(roundTrump);
-            if (turn == 0) {
+            if (turn == 0 || cardIsStronger(cardPlayed)) {
                 roundTrump = cardPlayed.getTrump();
+                strongestCard = cardPlayed;
+                player.setHand(true);
             }
             turn++;
             System.out.println(player.getName() + " has played " + cardPlayed + " - decksize: " + player.getDeck().size());
         }
+        System.out.println("Strongest: " + strongestCard);
     }
 
     public void resetRound() {
@@ -68,8 +72,14 @@ public class GameEngine {
 	    }
     }
 
+    private boolean cardIsStronger(Card card) {
+        return (card.getTrump().equals(roundTrump) &&
+                card.getValue().ordinal() > strongestCard.getValue().ordinal()) ||
+                (roundTrump != masterTrump && card.getTrump().equals(masterTrump));
+    }
+
     public boolean isRunning () {
 	    return (players.get(0).score + players.get(2).score == 7)
 	     || (players.get(1).score + players.get(3).score == 7);
-        }
+    }
 }
