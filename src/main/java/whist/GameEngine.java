@@ -35,6 +35,7 @@ public class GameEngine {
             i = (i + 1) % 4;
             System.out.println(player.getName() + " has played " + cardPlayed + " - decksize: " + player.getDeck().size());
         }
+        players.get(whoHasTheHand()).points += 1;
         System.out.println(players.get(whoHasTheHand()).getName() + " won the round with " + strongestCard.getValue());
     }
 
@@ -87,7 +88,6 @@ public class GameEngine {
                 return i;
             }
         }
-        System.out.println("HERE");
         return -1;
     }
 
@@ -97,7 +97,7 @@ public class GameEngine {
                 (roundTrump != masterTrump && card.getTrump().equals(masterTrump));
     }
 
-    public boolean isRunning () {
+    public boolean idRoundWon () {
 	    return (players.get(0).score + players.get(2).score == 7)
 	     || (players.get(1).score + players.get(3).score == 7);
     }
