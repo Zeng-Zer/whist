@@ -1,6 +1,8 @@
 package whist;
 
-public enum Trump {
+import java.io.Serializable;
+
+public enum Trump implements Serializable {
     HEART,
     SPADE,
     DIAMOND,

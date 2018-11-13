@@ -1,6 +1,9 @@
 package whist;
 
-public class Card {
+import java.io.Serializable;
+import java.util.Objects;
+
+public class Card implements Serializable {
     private Trump trump;
     private Value value;
 
@@ -31,5 +34,20 @@ public class Card {
                 "trump=" + trump +
                 ", value=" + value +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Card card = (Card) o;
+        return trump == card.trump &&
+                value == card.value;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(trump, value);
     }
 }

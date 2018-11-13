@@ -1,12 +1,14 @@
 package whist;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GameEngine {
+public class GameEngine extends Thread {
     private Trump masterTrump;
     private Trump roundTrump = Trump.NOTHING;
 
@@ -17,20 +19,32 @@ public class GameEngine {
     private Player topPlayer = null;
     private Map<Integer, Integer> teamScore = new HashMap<>();
 
-    GameEngine() {
+    GameEngine(ServerSocket listener) throws IOException {
+        connectPlayers(listener);
         resetGame();
     }
 
-    public void play() {
+    public void run() {
         while (teamScore.get(0) < 7 && teamScore.get(1) < 7) {
-            playHand();
+            try {
+                playHand();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             resetHand();
         }
         System.out.println("Final score Team 0: " + teamScore.get(0));
         System.out.println("Final score Team 1: " + teamScore.get(1));
+        for (Player player : players) {
+            try {
+                player.quit();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private void playHand() {
+    private void playHand() throws Exception {
         while (!topPlayer.getDeck().isEmpty()) {
             playRound();
         }
@@ -51,13 +65,15 @@ public class GameEngine {
         System.out.println("Team 1: " + teamScore.get(1));
     }
 
-    private void playRound() {
+    private void playRound() throws Exception {
         Player player;
         int i = topPlayer.getIndex();
+        List<Card> playedCards = new ArrayList<>();
 
         for (int turn = 0; turn < 4; ++turn) {
             player = players.get(i);
-            Card cardPlayed = player.play(roundTrump);
+            Card cardPlayed = player.play(roundTrump, playedCards);
+            playedCards.add(cardPlayed);
 
             // Change top player
             if (turn == 0 || cardIsStronger(cardPlayed)) {
@@ -68,20 +84,23 @@ public class GameEngine {
 
             i = (i + 1) % 4;
 
-            System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed + " - decksize: " + player.getDeck().size());
+            System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
         }
-        System.out.println(topPlayer.getName() + "(" + topPlayer.getTeam() + ") won the round with " + strongestCard.getValue() + "\n");
+        System.out.println(topPlayer.getName() + "(" + topPlayer.getTeam() + ") won the round with " + strongestCard.toString() + "\n");
         topPlayer.setPoints(topPlayer.getPoints() + 1);
+    }
+
+    private void connectPlayers(ServerSocket listener) throws IOException {
+        players.clear();
+        for (int i = 0; i < 4; ++i) {
+            System.out.println("Waiting for player to connect");
+            players.add(new Player(listener.accept(), "player: " + (i + 1), i));
+            System.out.println("Player " + (i + 1) + " connected");
+        }
     }
 
     public void resetGame() {
         masterTrump = Trump.NOTHING;
-
-        // Create player
-        players.clear();
-        for (int i = 0; i < 4; ++i) {
-            players.add(new Player("p" + (i + 1), i));
-        }
 
         // Reset score
         teamScore.clear();
