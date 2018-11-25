@@ -31,7 +31,11 @@ public class GameEngine extends Thread {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            resetHand();
+            try {
+                resetHand();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         System.out.println("Final score Team 0: " + teamScore.get(0));
         System.out.println("Final score Team 1: " + teamScore.get(1));
@@ -70,6 +74,8 @@ public class GameEngine extends Thread {
         int i = topPlayer.getIndex();
         List<Card> playedCards = new ArrayList<>();
 
+        System.out.println(topPlayer.getName() + " has to play");
+
         for (int turn = 0; turn < 4; ++turn) {
             player = players.get(i);
             Card cardPlayed = player.play(roundTrump, playedCards);
@@ -83,6 +89,7 @@ public class GameEngine extends Thread {
             }
 
             i = (i + 1) % 4;
+            signalWhosHand(i);
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
         }
@@ -115,10 +122,14 @@ public class GameEngine extends Thread {
             }
         }
 
-        resetHand();
+        try {
+            resetHand();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void resetHand() {
+    private void resetHand() throws IOException {
         int indexTrump = masterTrump.ordinal();
 
         // Change MasterTrump following the round
@@ -136,12 +147,24 @@ public class GameEngine extends Thread {
         }
 
         // Set hand to a random player
-        topPlayer = players.get((int) (Math.random() * 4));
+        int whosHand = (int) (Math.random() * 4);
+        topPlayer = players.get(whosHand);
 
         // Split deck
         Collections.shuffle(deck);
         for (int i = 0; i < 4; ++i) {
             players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
+            players.get(i).connected(players.get(i).getDeck(), i);
+        }
+    }
+
+    private void signalWhosHand(int index) throws ClassNotFoundException {
+        for (Player p : players) {
+            try {
+                p.whosHand(index);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

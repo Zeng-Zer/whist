@@ -1,13 +1,23 @@
 package whist;
 
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Card implements Serializable {
     private Trump trump;
     private Value value;
+    public JButton button;
 
     public Card(Trump trump, Value value) {
+
+        button = new JButton(String.valueOf(value) + " of " + String.valueOf(trump)/*new ImageIcon("resources/DosCarte.png")*/);
+        /*button.setBorder(BorderFactory.createEmptyBorder());
+        button.setContentAreaFilled(false);
+        button.setText(String.valueOf(value) + " of " + String.valueOf(trump));
+    */    button.setMaximumSize(new Dimension(100, 141));
         this.trump = trump;
         this.value = value;
     }

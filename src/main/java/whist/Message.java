@@ -12,6 +12,8 @@ public class Message implements Serializable {
     private List<Card> deck;
     // CLIENT
     private Card card;
+    private int indexPlayer;
+    private int whosHand;
 
     /**
      * Server Message constructor
@@ -22,6 +24,18 @@ public class Message implements Serializable {
         this.deck = deck;
         this.trump = trump;
         this.player = player;
+      //  this.whosHand = whosHand;
+    }
+
+    public Message(Command command, List<Card> deck, int index) {
+        this.command = command;
+        this.deck = deck;
+        this.indexPlayer = index;
+    }
+
+    public Message(Command command, int whosHand) {
+        this.command = command;
+        this.whosHand = whosHand;
     }
 
     public Message(Command command) {
@@ -58,5 +72,13 @@ public class Message implements Serializable {
 
     public Card getCard() {
         return card;
+    }
+
+    public int getIndexPlayer() {
+        return indexPlayer;
+    }
+
+    public int getWhosHand() {
+        return whosHand;
     }
 }
