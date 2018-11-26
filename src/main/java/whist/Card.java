@@ -11,13 +11,12 @@ public class Card implements Serializable {
     private Value value;
     public JButton button;
 
-    public Card(Trump trump, Value value) {
+    public Card(Trump trump, Value value, String resource) {
 
-        button = new JButton(String.valueOf(value) + " of " + String.valueOf(trump)/*new ImageIcon("resources/DosCarte.png")*/);
-        /*button.setBorder(BorderFactory.createEmptyBorder());
+        button = new JButton(new ImageIcon(resource));
+        button.setBorder(BorderFactory.createEmptyBorder());
         button.setContentAreaFilled(false);
-        button.setText(String.valueOf(value) + " of " + String.valueOf(trump));
-    */    button.setMaximumSize(new Dimension(100, 141));
+        button.setMaximumSize(new Dimension(100, 141));
         this.trump = trump;
         this.value = value;
     }

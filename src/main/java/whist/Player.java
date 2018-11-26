@@ -89,7 +89,6 @@ public class Player implements Serializable {
         mainPanel.add(playerCard, c);
         // playerCard.setSize(650, 150);
        // createCards();
-       // mainPanel.add(playerCard, BorderLayout.SOUTH);
         f.add(mainPanel);
         f.pack();
         f.setLocationRelativeTo(null);
@@ -137,13 +136,8 @@ public class Player implements Serializable {
     public void run() throws IOException, ClassNotFoundException {
         while (true) {
             System.out.println("Waiting for command");
-           // try {
             Message message = (Message) is.readObject();
-           /* } catch(SocketTimeoutException e) {
-                e.printStackTrace();
-                return;
-            }
-*/
+
             // Read command
             switch (message.getCommand()) {
                 case CONNECT:
@@ -192,9 +186,6 @@ public class Player implements Serializable {
     }
 
     public void createCards() {
-        if (deck.isEmpty()) {
-            return ;
-        }
         for (Card card : deck) {
             card.button.addActionListener(new ActionListener() {
                 @Override
@@ -219,15 +210,16 @@ public class Player implements Serializable {
                     hasToPlay = false;
                 }
             });
-       /* for (int i = 0; i < 13; i++) {
-            Card c = new Card(Trump.CLUB, Value.KING);
+        /*for (int i = 0; i < 13; i++) {
+            Card c = new Card(Trump.CLUB, Value.KING, "resources/club/King.png");
             JPanel p = playerCard;
-            int height = p.getSize().height - 150;
-            System.out.println(height);
             c.button.setSize(100, 141);
             c.button.setLocation(i * 50, 0);
             p.add(c.button);
-        }*/
+        *///}
+            card.button.setSize(100, 141);
+            card.button.setLocation(deck.indexOf(card) * 50, 0);
+            playerCard.add(card.button);
         }
     }
 
@@ -268,12 +260,11 @@ public class Player implements Serializable {
         os.writeObject(message);
     }
 
-    public void whosHand(int index) throws IOException, ClassNotFoundException {
+    /*public void whosHand(int index) throws IOException, ClassNotFoundException {
         Message message = new Message(Command.HAND, index);
         os.writeObject(message);
 
   /*      Message response = (Message) is.readObject();
         whosHand = response.getWhosHand();
-*/
-    }
+    }*/
 }

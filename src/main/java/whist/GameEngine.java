@@ -19,8 +19,11 @@ public class GameEngine extends Thread {
     private Player topPlayer = null;
     private Map<Integer, Integer> teamScore = new HashMap<>();
 
-    GameEngine(ServerSocket listener) throws IOException {
+    public Map<Trump, Map<Value, String>> mainDeck;
+
+    GameEngine(ServerSocket listener, Map<Trump, Map<Value, String>> deck) throws IOException {
         connectPlayers(listener);
+        mainDeck = deck;
         resetGame();
     }
 
@@ -89,7 +92,7 @@ public class GameEngine extends Thread {
             }
 
             i = (i + 1) % 4;
-            signalWhosHand(i);
+           // signalWhosHand(i);
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
         }
@@ -103,6 +106,7 @@ public class GameEngine extends Thread {
             System.out.println("Waiting for player to connect");
             players.add(new Player(listener.accept(), "player: " + (i + 1), i));
             System.out.println("Player " + (i + 1) + " connected");
+           // players.get(i).connected(players.get(i).getDeck(), i);
         }
     }
 
@@ -118,7 +122,8 @@ public class GameEngine extends Thread {
         deck.clear();
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 13; ++j) {
-                deck.add(new Card(Trump.values()[i], Value.values()[j]));
+                String resource = mainDeck.get(Trump.values()[i]).get(Value.values()[j]);
+                deck.add(new Card(Trump.values()[i], Value.values()[j], resource));
             }
         }
 
@@ -158,7 +163,7 @@ public class GameEngine extends Thread {
         }
     }
 
-    private void signalWhosHand(int index) throws ClassNotFoundException {
+    /*private void signalWhosHand(int index) throws ClassNotFoundException {
         for (Player p : players) {
             try {
                 p.whosHand(index);
@@ -166,7 +171,7 @@ public class GameEngine extends Thread {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
     private boolean cardIsStronger(Card card) {
         return (card.getTrump().equals(roundTrump) &&
