@@ -79,9 +79,11 @@ public class GameEngine extends Thread {
 
         System.out.println(topPlayer.getName() + " has to play");
 
-        for (int turn = 0; turn < 4; ++turn) {
+        for (int turn = 0; turn < 4; turn++) {
             player = players.get(i);
             Card cardPlayed = player.play(roundTrump, playedCards);
+            System.out.println(i);
+            sendPlayedCard(playedCards, i);
             playedCards.add(cardPlayed);
 
             // Change top player
@@ -91,7 +93,6 @@ public class GameEngine extends Thread {
                 topPlayer = player;
             }
 
-           // sendPlayedCard(playedCards);
             i = (i + 1) % 4;
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
@@ -163,10 +164,10 @@ public class GameEngine extends Thread {
         }
     }
 
-    private void sendPlayedCard(List<Card> playedCards) throws ClassNotFoundException {
+    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) throws ClassNotFoundException {
         for (Player p : players) {
             try {
-                p.sendPlayedCard(playedCards);
+                p.sendPlayedCard(playedCards, whoHasPlayed);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -34,7 +34,7 @@ public class Player implements Serializable {
     private Trump roundTrump;
     private Trump masterTrump;
     private boolean hasToPlay = false;
-    private int[] othersCards = {1, 2, 3, 4};
+    private int[] othersCards = {13, 13, 13, 13};
     private Map<Trump, String> trumpIcons = new HashMap<>();
 
     JFrame f;
@@ -47,7 +47,6 @@ public class Player implements Serializable {
         this.name = name;
         this.team = id % 2;
         this.index = id;
-        System.out.println("PLAYER ID: " + id);
         this.os = new ObjectOutputStream(socket.getOutputStream());
         this.is = new ObjectInputStream(socket.getInputStream());
     }
@@ -165,8 +164,10 @@ public class Player implements Serializable {
 
                 case CARD_RESPONSE:
                     playedCard = message.getPlayedCards();
+                    int whoHasPlayed = message.getWhoHasPlayed();
+                    if (whoHasPlayed != index)
+                        othersCards[whoHasPlayed] -= 1;
                     break;
-
                 case QUIT:
                     System.out.println("Quit");
                     socket.close();
@@ -318,8 +319,8 @@ public class Player implements Serializable {
         os.writeObject(message);
     }
 
-    public void sendPlayedCard(List<Card> playedCards) throws IOException, ClassNotFoundException {
-        Message message = new Message(Command.CARD_RESPONSE, playedCards);
+    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) throws IOException, ClassNotFoundException {
+        Message message = new Message(Command.CARD_RESPONSE, playedCards, whoHasPlayed);
         os.writeObject(message);
     }
 }
