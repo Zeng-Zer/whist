@@ -34,8 +34,8 @@ public class Player implements Serializable {
     private Trump roundTrump;
     private Trump masterTrump;
     private boolean hasToPlay = false;
-    private int[] othersCards = {13, 13, 13};
-    private Map<Trump, ImageIcon> trumpIcons = new HashMap<>();
+    private int[] othersCards = {1, 2, 3, 4};
+    private Map<Trump, String> trumpIcons = new HashMap<>();
 
     JFrame f;
     JPanel mainPanel = new JPanel();
@@ -47,6 +47,7 @@ public class Player implements Serializable {
         this.name = name;
         this.team = id % 2;
         this.index = id;
+        System.out.println("PLAYER ID: " + id);
         this.os = new ObjectOutputStream(socket.getOutputStream());
         this.is = new ObjectInputStream(socket.getInputStream());
     }
@@ -66,10 +67,10 @@ public class Player implements Serializable {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setPreferredSize(new Dimension(1200, 900));
 
-        trumpIcons.put(Trump.HEART, new ImageIcon("resources/Heart.png"));
-        trumpIcons.put(Trump.CLUB, new ImageIcon("resources/Club.png"));
-        trumpIcons.put(Trump.DIAMOND, new ImageIcon("resources/Diamond.png"));
-        trumpIcons.put(Trump.SPADE, new ImageIcon("resources/Spade.png"));
+        trumpIcons.put(Trump.HEART, "resources/Heart.png");
+        trumpIcons.put(Trump.CLUB, "resources/Club.png");
+        trumpIcons.put(Trump.DIAMOND, "resources/Diamond.png");
+        trumpIcons.put(Trump.SPADE, "resources/Spade.png");
         mainPanel.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -210,14 +211,13 @@ public class Player implements Serializable {
 
     private void drawTrump(Trump trump, int anchor, int gridx, int gridy,int top, int right) {
         JLabel t;
-        ImageIcon img = trumpIcons.get(trump);
-        Image normalImg = img.getImage();
-
-        t = new JLabel(img);
-        System.out.println(masterTrump + " " + trump);
+        t = new JLabel();
 
         if (masterTrump != trump) {
-            t.setIcon(new ImageIcon(GrayFilter.createDisabledImage(normalImg)));
+            t.setIcon(new ImageIcon(GrayFilter.createDisabledImage(new ImageIcon(trumpIcons.get(trump)).getImage())));
+        }
+        else {
+            t.setIcon(new ImageIcon(new ImageIcon(trumpIcons.get(trump)).getImage()));
         }
         mainPanel.add(t,  new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.0, anchor,
                 GridBagConstraints.NONE, new Insets(top, 0, 0, right), 0, 0));
@@ -228,6 +228,7 @@ public class Player implements Serializable {
         c.fill = GridBagConstraints.HORIZONTAL;
         JPanel other;
         JPanel p = playerCard;
+        int tmpIndex = (index + 1) % 4;
 
         p.removeAll();
         drawTrump(Trump.HEART, GridBagConstraints.EAST, 4, 0, -70, 10);
@@ -239,7 +240,7 @@ public class Player implements Serializable {
             other = new JPanel();
             other.setLayout(null);
             other.setBackground(new Color(0, 102, 0));
-            for (int j = 0; j < othersCards[i]; j++) {
+            for (int j = 0; j < othersCards[tmpIndex]; j++) {
                 JButton img = new JButton();
                 img.setBorder(BorderFactory.createEmptyBorder());
                 img.setContentAreaFilled(false);
@@ -276,6 +277,7 @@ public class Player implements Serializable {
                     break;
             }
             mainPanel.add(other, c);
+            tmpIndex = (tmpIndex + 1) % 4;
        }
         createCards();
      /*   c.gridy = 8;
