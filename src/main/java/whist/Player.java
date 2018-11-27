@@ -11,7 +11,9 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Thread.sleep;
 import static javax.swing.SpringLayout.*;
@@ -22,6 +24,7 @@ public class Player implements Serializable {
     private transient ObjectInputStream is;
     private transient ObjectOutputStream os;
     private List<Card> deck = new ArrayList<>();
+    private List<Card> playedCard = new ArrayList<>();
     private String name;
     // team id
     private int team;
@@ -29,7 +32,10 @@ public class Player implements Serializable {
     private int points = 0;
     private int index;
     private Trump roundTrump;
+    private Trump masterTrump;
     private boolean hasToPlay = false;
+    private int[] othersCards = {13, 13, 13};
+    private Map<Trump, ImageIcon> trumpIcons = new HashMap<>();
 
     JFrame f;
     JPanel mainPanel = new JPanel();
@@ -59,36 +65,23 @@ public class Player implements Serializable {
         f.setTitle(name);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setPreferredSize(new Dimension(1200, 900));
+
+        trumpIcons.put(Trump.HEART, new ImageIcon("resources/Heart.png"));
+        trumpIcons.put(Trump.CLUB, new ImageIcon("resources/Club.png"));
+        trumpIcons.put(Trump.DIAMOND, new ImageIcon("resources/Diamond.png"));
+        trumpIcons.put(Trump.SPADE, new ImageIcon("resources/Spade.png"));
         mainPanel.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
-        /* for (int i = 0; i < 20; ++i) {
-            JLabel b = new JLabel("                   ");
-            b.setMinimumSize(new Dimension(60, 58));
-            c.gridx = i;
-            mainPanel.add(b, c);
-        }
-        c.gridx = 0;
-        for (int i = 0; i < 15; ++i) {
-            JLabel b = new JLabel("                    ");
-            b.setMinimumSize(new Dimension(60, 58));
-            c.gridy = i;
-            mainPanel.add(b, c);
-        }*/
-       /* for (int i = 0; i < 13; ++i) {
-            JButton b = new JButton("Card example");
-            b.setPreferredSize(new Dimension(141, 100));
-            c.gridy = i;
-            mainPanel.add(b, c);
-        }*/
+
         mainPanel.setBackground(new Color(0, 102, 0));
         playerCard.setLayout(null);
         playerCard.setBackground(new Color(0, 102, 0));
-        c.ipadx = 700;
+        c.gridx = 2;
+        c.gridy = 3;
         c.ipady = 141;
+        c.ipadx = 700;
         mainPanel.add(playerCard, c);
-        // playerCard.setSize(650, 150);
-       // createCards();
         f.add(mainPanel);
         f.pack();
         f.setLocationRelativeTo(null);
@@ -132,6 +125,18 @@ public class Player implements Serializable {
         return false;
     }
 
+    private List<Card> sortDeck(List<Card> deck) {
+        List<Card> newDeck = new ArrayList<>();
+        for (int i = 0; i < 4; ++i) {
+            for (Card card : deck) {
+                if (Trump.values()[i] == card.getTrump()) {
+                    newDeck.add(card);
+                }
+            }
+        }
+        return newDeck;
+    }
+
     // Client calls this function
     public void run() throws IOException, ClassNotFoundException {
         while (true) {
@@ -141,8 +146,9 @@ public class Player implements Serializable {
             // Read command
             switch (message.getCommand()) {
                 case CONNECT:
-                    deck = message.getDeck();
+                    deck = sortDeck(message.getDeck());
                     index = message.getIndexPlayer();
+                    masterTrump = message.getMasterTrump();
                     createGUI();
                     break;
 
@@ -154,24 +160,10 @@ public class Player implements Serializable {
                     points = message.getPlayer().points;
                     hasToPlay = true;
                     roundTrump = message.getTrump();
+                    break;
 
-                    // random ia
-                    //int i = (int) (Math.random() * deck.size());
-                    //Card randomCard = deck.get(i);
-
-                  /*  if (isTrumpInDeck(roundTrump) && card.getTrump() != roundTrump) {
-                        System.out.println("You have " + String.valueOf(roundTrump) + "in your deck, you should play it");
-                        break;*/
-
-                        /*while (!randomCard.getTrump().equals(roundTrump)) {
-                            i = (int) (Math.random() * deck.size());
-                            randomCard = deck.get(i);
-                        }
-                    }*/
-                   /* deck.remove(deck.indexOf(card));
-                    System.out.println("Player " + name + " played: " + card.toString() + ", card left: " + deck.size());
-                    Message response = new Message(card);
-                    os.writeObject(response);*/
+                case CARD_RESPONSE:
+                    playedCard = message.getPlayedCards();
                     break;
 
                 case QUIT:
@@ -181,7 +173,7 @@ public class Player implements Serializable {
                 default:
                     break;
             }
-            drawCard();
+            draw();
         }
     }
 
@@ -206,28 +198,92 @@ public class Player implements Serializable {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    drawCard();
+                    draw();
                     hasToPlay = false;
                 }
             });
-        /*for (int i = 0; i < 13; i++) {
-            Card c = new Card(Trump.CLUB, Value.KING, "resources/club/King.png");
-            JPanel p = playerCard;
-            c.button.setSize(100, 141);
-            c.button.setLocation(i * 50, 0);
-            p.add(c.button);
-        *///}
             card.button.setSize(100, 141);
             card.button.setLocation(deck.indexOf(card) * 50, 0);
             playerCard.add(card.button);
         }
     }
 
-    public void drawCard() {
+    private void drawTrump(Trump trump, int anchor, int gridx, int gridy,int top, int right) {
+        JLabel t;
+        ImageIcon img = trumpIcons.get(trump);
+        Image normalImg = img.getImage();
+
+        t = new JLabel(img);
+        System.out.println(masterTrump + " " + trump);
+
+        if (masterTrump != trump) {
+            t.setIcon(new ImageIcon(GrayFilter.createDisabledImage(normalImg)));
+        }
+        mainPanel.add(t,  new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.0, anchor,
+                GridBagConstraints.NONE, new Insets(top, 0, 0, right), 0, 0));
+    }
+
+    private void draw() {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        JPanel other;
         JPanel p = playerCard;
 
         p.removeAll();
+        drawTrump(Trump.HEART, GridBagConstraints.EAST, 4, 0, -70, 10);
+        drawTrump(Trump.SPADE, GridBagConstraints.LINE_END, 4, 4, 0, 0);
+        drawTrump(Trump.DIAMOND, GridBagConstraints.LINE_START, 0, 4, 0, 0);
+        drawTrump(Trump.CLUB, GridBagConstraints.WEST, 0, 0, -70, 10);
+
+        for (int i = 0; i < 3; i++) {
+            other = new JPanel();
+            other.setLayout(null);
+            other.setBackground(new Color(0, 102, 0));
+            for (int j = 0; j < othersCards[i]; j++) {
+                JButton img = new JButton();
+                img.setBorder(BorderFactory.createEmptyBorder());
+                img.setContentAreaFilled(false);
+                if (i % 2 != 0) {
+                    img.setIcon(new ImageIcon("resources/DosCarte.png"));
+                    img.setSize(new Dimension(100, 141));
+                    img.setLocation(j * 50, 0);
+                } else {
+                    img.setIcon(new ImageIcon("resources/DosCarte2.png"));
+                    img.setSize(new Dimension(141, 100));
+                    img.setLocation(0, j * 35);
+                }
+                other.add(img);
+            }
+            switch (i) {
+                case 0:
+                    c.gridx = 1;
+                    c.gridy = 2;
+                    c.ipadx = 141;
+                    c.ipady = 520;
+                    break;
+                case 1:
+                    c.gridx = 2;
+                    c.gridy = 0;
+                    c.ipady = 141;
+                    break;
+                case 2:
+                    c.gridx = 3;
+                    c.gridy = 2;
+                    c.ipadx = 141;
+                    c.ipady = 520;
+                    break;
+                default:
+                    break;
+            }
+            mainPanel.add(other, c);
+       }
         createCards();
+     /*   c.gridy = 8;
+        for (int i = 0; i < playedCard.size(); ++i) {
+        //    c.gridx = i + 7;
+            System.out.println(playedCard.get(i));
+            //  mainPanel.add(playedCard.get(i).button, c);
+        }*/
         p.revalidate();
         p.repaint();
     }
@@ -253,18 +309,15 @@ public class Player implements Serializable {
         os.writeObject(message);
     }
 
-    public void connected(List<Card> deck, int index) throws IOException {
+    public void connected(List<Card> deck, int index, Trump masterTrump) throws IOException {
         List<Card> newDeck = new ArrayList<>(deck);
-        Message message = new Message(Command.CONNECT, newDeck, index);
+        Message message = new Message(Command.CONNECT, newDeck, index, masterTrump);
 
         os.writeObject(message);
     }
 
-    /*public void whosHand(int index) throws IOException, ClassNotFoundException {
-        Message message = new Message(Command.HAND, index);
+    public void sendPlayedCard(List<Card> playedCards) throws IOException, ClassNotFoundException {
+        Message message = new Message(Command.CARD_RESPONSE, playedCards);
         os.writeObject(message);
-
-  /*      Message response = (Message) is.readObject();
-        whosHand = response.getWhosHand();
-    }*/
+    }
 }

@@ -8,12 +8,12 @@ public class Message implements Serializable {
     // SERVER
     private List<Card> playedCards;
     private Trump trump;
+    private Trump masterTrump;
     private Player player;
     private List<Card> deck;
     // CLIENT
     private Card card;
     private int indexPlayer;
-    private int whosHand;
 
     /**
      * Server Message constructor
@@ -24,18 +24,18 @@ public class Message implements Serializable {
         this.deck = deck;
         this.trump = trump;
         this.player = player;
-      //  this.whosHand = whosHand;
     }
 
-    public Message(Command command, List<Card> deck, int index) {
+    public Message(Command command, List<Card> deck, int index, Trump masterTrump) {
         this.command = command;
         this.deck = deck;
         this.indexPlayer = index;
+        this.masterTrump = masterTrump;
     }
 
-    public Message(Command command, int whosHand) {
+    public Message(Command command, List<Card> playedCards) {
         this.command = command;
-        this.whosHand = whosHand;
+        this.playedCards = playedCards;
     }
 
     public Message(Command command) {
@@ -78,7 +78,7 @@ public class Message implements Serializable {
         return indexPlayer;
     }
 
-    public int getWhosHand() {
-        return whosHand;
+    public Trump getMasterTrump() {
+        return masterTrump;
     }
 }

@@ -91,8 +91,8 @@ public class GameEngine extends Thread {
                 topPlayer = player;
             }
 
+           // sendPlayedCard(playedCards);
             i = (i + 1) % 4;
-           // signalWhosHand(i);
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
         }
@@ -106,7 +106,7 @@ public class GameEngine extends Thread {
             System.out.println("Waiting for player to connect");
             players.add(new Player(listener.accept(), "player: " + (i + 1), i));
             System.out.println("Player " + (i + 1) + " connected");
-           // players.get(i).connected(players.get(i).getDeck(), i);
+            //players.get(i).connected(players.get(i).getDeck(), i, masterTrump);
         }
     }
 
@@ -159,19 +159,19 @@ public class GameEngine extends Thread {
         Collections.shuffle(deck);
         for (int i = 0; i < 4; ++i) {
             players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
-            players.get(i).connected(players.get(i).getDeck(), i);
+            players.get(i).connected(players.get(i).getDeck(), i, masterTrump);
         }
     }
 
-    /*private void signalWhosHand(int index) throws ClassNotFoundException {
+    private void sendPlayedCard(List<Card> playedCards) throws ClassNotFoundException {
         for (Player p : players) {
             try {
-                p.whosHand(index);
+                p.sendPlayedCard(playedCards);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    }*/
+    }
 
     private boolean cardIsStronger(Card card) {
         return (card.getTrump().equals(roundTrump) &&
