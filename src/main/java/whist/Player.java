@@ -24,7 +24,6 @@ public class Player implements Serializable {
     private transient ObjectInputStream is;
     private transient ObjectOutputStream os;
     private List<Card> deck = new ArrayList<>();
-    private List<Card> playedCard = new ArrayList<>();
     private String name;
     // team id
     private int team;
@@ -35,11 +34,13 @@ public class Player implements Serializable {
     private Trump masterTrump;
     private boolean hasToPlay = false;
     private int[] othersCards = {13, 13, 13, 13};
+    private Card[] playedCard = {null, null, null, null};
     private Map<Trump, String> trumpIcons = new HashMap<>();
 
     JFrame f;
     JPanel mainPanel = new JPanel();
     JPanel playerCard = new JPanel();
+    JPanel center = new JPanel();
 
     // Server constructor
     public Player(Socket socket, String name, int id) throws IOException {
@@ -76,12 +77,18 @@ public class Player implements Serializable {
 
         mainPanel.setBackground(new Color(0, 102, 0));
         playerCard.setLayout(null);
-        playerCard.setBackground(new Color(0, 102, 0));
+        playerCard.setBackground(null);
+        center.setLayout(null);
+        //center.setBackground(null);
         c.gridx = 2;
         c.gridy = 3;
         c.ipady = 141;
         c.ipadx = 700;
         mainPanel.add(playerCard, c);
+        c.gridx = 2;
+        c.gridy = 1;
+        c.ipady = 520;
+        mainPanel.add(center, c);
         f.add(mainPanel);
         f.pack();
         f.setLocationRelativeTo(null);
@@ -165,7 +172,10 @@ public class Player implements Serializable {
                 case CARD_RESPONSE:
                     playedCard = message.getPlayedCards();
                     int whoHasPlayed = message.getWhoHasPlayed();
-                    if (whoHasPlayed != index)
+                /*    for (Card c : playedCard) {
+                        System.out.println(c);
+                    }
+                */    if (whoHasPlayed != index)
                         othersCards[whoHasPlayed] -= 1;
                     break;
                 case QUIT:
@@ -192,7 +202,7 @@ public class Player implements Serializable {
                         System.out.println("You have " + String.valueOf(roundTrump) + "in your deck, you should play it");
                         return ;
                     }
-                    deck.remove(deck.indexOf(card));
+                    playedCard[index] = deck.remove(deck.indexOf(card));
                     System.out.println("Player " + name + " played: " + card.toString() + ", card left: " + deck.size());
                     Message response = new Message(card);
                     try {
@@ -232,11 +242,16 @@ public class Player implements Serializable {
         int tmpIndex = (index + 1) % 4;
 
         p.removeAll();
+        center.removeAll();
         drawTrump(Trump.HEART, GridBagConstraints.EAST, 4, 0, -70, 10);
         drawTrump(Trump.SPADE, GridBagConstraints.LINE_END, 4, 4, 0, 0);
         drawTrump(Trump.DIAMOND, GridBagConstraints.LINE_START, 0, 4, 0, 0);
         drawTrump(Trump.CLUB, GridBagConstraints.WEST, 0, 0, -70, 10);
 
+        if (playedCard[index] != null) {
+            playedCard[index].button.setLocation(300, 320);
+            center.add(playedCard[index].button);
+        }
         for (int i = 0; i < 3; i++) {
             other = new JPanel();
             other.setLayout(null);
@@ -259,45 +274,49 @@ public class Player implements Serializable {
             switch (i) {
                 case 0:
                     c.gridx = 1;
-                    c.gridy = 2;
-                    c.ipadx = 141;
+                    c.gridy = 1;
                     c.ipady = 520;
+                    c.ipadx = 141;
+                    if (playedCard[tmpIndex] != null)
+                        playedCard[tmpIndex].button.setLocation(100, 160);
                     break;
                 case 1:
                     c.gridx = 2;
                     c.gridy = 0;
                     c.ipady = 141;
+                    if (playedCard[tmpIndex] != null)
+                        playedCard[tmpIndex].button.setLocation(300, 50);
                     break;
                 case 2:
                     c.gridx = 3;
-                    c.gridy = 2;
-                    c.ipadx = 141;
+                    c.gridy = 1;
                     c.ipady = 520;
+                    c.ipadx = 141;
+                    if (playedCard[tmpIndex] != null)
+                        playedCard[tmpIndex].button.setLocation(500, 160);
                     break;
                 default:
                     break;
             }
+            if (playedCard[tmpIndex] != null)
+                center.add(playedCard[tmpIndex].button);
             mainPanel.add(other, c);
             tmpIndex = (tmpIndex + 1) % 4;
        }
         createCards();
-     /*   c.gridy = 8;
-        for (int i = 0; i < playedCard.size(); ++i) {
-        //    c.gridx = i + 7;
-            System.out.println(playedCard.get(i));
-            //  mainPanel.add(playedCard.get(i).button, c);
-        }*/
         p.revalidate();
+        center.revalidate();
         p.repaint();
+        center.repaint();
     }
 
     // Server calls this function
-    public Card play(Trump roundTrump, List<Card> playedCards) throws IOException, ClassNotFoundException {
+    public Card play(Trump roundTrump) throws IOException, ClassNotFoundException {
         // copy new deck
         List<Card> newDeck = new ArrayList<>(deck);
 
         // send play message
-        Message message = new Message(Command.PLAY, playedCards, newDeck, roundTrump, this);
+        Message message = new Message(Command.PLAY, newDeck, roundTrump, this);
         os.writeObject(message);
 
         // read response
@@ -319,7 +338,7 @@ public class Player implements Serializable {
         os.writeObject(message);
     }
 
-    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) throws IOException, ClassNotFoundException {
+    public void sendPlayedCard(Card[] playedCards, int whoHasPlayed) throws IOException {
         Message message = new Message(Command.CARD_RESPONSE, playedCards, whoHasPlayed);
         os.writeObject(message);
     }

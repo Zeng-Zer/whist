@@ -16,7 +16,7 @@ public class Card implements Serializable {
         button = new JButton(new ImageIcon(resource));
         button.setBorder(BorderFactory.createEmptyBorder());
         button.setContentAreaFilled(false);
-        button.setMaximumSize(new Dimension(100, 141));
+        button.setSize(new Dimension(100, 141));
         this.trump = trump;
         this.value = value;
     }

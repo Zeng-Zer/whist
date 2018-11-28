@@ -6,7 +6,7 @@ import java.util.List;
 public class Message implements Serializable {
     private Command command;
     // SERVER
-    private List<Card> playedCards;
+    private Card[] playedCards = {null, null, null, null};
     private Trump trump;
     private Trump masterTrump;
     private Player player;
@@ -19,9 +19,8 @@ public class Message implements Serializable {
     /**
      * Server Message constructor
      */
-    public Message(Command command, List<Card> playedCards, List<Card> deck, Trump trump, Player player) {
+    public Message(Command command, List<Card> deck, Trump trump, Player player) {
         this.command = command;
-        this.playedCards = playedCards;
         this.deck = deck;
         this.trump = trump;
         this.player = player;
@@ -34,7 +33,7 @@ public class Message implements Serializable {
         this.masterTrump = masterTrump;
     }
 
-    public Message(Command command, List<Card> playedCards, int whoHasPlayed) {
+    public Message(Command command, Card[] playedCards, int whoHasPlayed) {
         this.command = command;
         this.playedCards = playedCards;
         this.whoHasPlayed = whoHasPlayed;
@@ -56,7 +55,7 @@ public class Message implements Serializable {
         return command;
     }
 
-    public List<Card> getPlayedCards() {
+    public Card[] getPlayedCards() {
         return playedCards;
     }
 

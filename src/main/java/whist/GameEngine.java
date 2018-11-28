@@ -75,16 +75,14 @@ public class GameEngine extends Thread {
     private void playRound() throws Exception {
         Player player;
         int i = topPlayer.getIndex();
-        List<Card> playedCards = new ArrayList<>();
+        Card[] playedCards = {null, null, null, null};
 
         System.out.println(topPlayer.getName() + " has to play");
 
         for (int turn = 0; turn < 4; turn++) {
             player = players.get(i);
-            Card cardPlayed = player.play(roundTrump, playedCards);
-            System.out.println(i);
-            sendPlayedCard(playedCards, i);
-            playedCards.add(cardPlayed);
+            Card cardPlayed = player.play(roundTrump);
+            playedCards[i] = cardPlayed;
 
             // Change top player
             if (turn == 0 || cardIsStronger(cardPlayed)) {
@@ -93,10 +91,12 @@ public class GameEngine extends Thread {
                 topPlayer = player;
             }
 
+            sendPlayedCard(playedCards, i);
             i = (i + 1) % 4;
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
         }
+        roundTrump = Trump.NOTHING;
         System.out.println(topPlayer.getName() + "(" + topPlayer.getTeam() + ") won the round with " + strongestCard.toString() + "\n");
         topPlayer.setPoints(topPlayer.getPoints() + 1);
     }
@@ -164,7 +164,7 @@ public class GameEngine extends Thread {
         }
     }
 
-    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) throws ClassNotFoundException {
+    private void sendPlayedCard(Card[] playedCards, int whoHasPlayed) throws ClassNotFoundException {
         for (Player p : players) {
             try {
                 p.sendPlayedCard(playedCards, whoHasPlayed);
