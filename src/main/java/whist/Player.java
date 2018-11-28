@@ -172,10 +172,10 @@ public class Player implements Serializable {
                 case CARD_RESPONSE:
                     playedCard = message.getPlayedCards();
                     int whoHasPlayed = message.getWhoHasPlayed();
-                /*    for (Card c : playedCard) {
+                    for (Card c : playedCard) {
                         System.out.println(c);
                     }
-                */    if (whoHasPlayed != index)
+                    if (whoHasPlayed != index)
                         othersCards[whoHasPlayed] -= 1;
                     break;
                 case QUIT:
