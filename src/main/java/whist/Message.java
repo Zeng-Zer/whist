@@ -14,6 +14,7 @@ public class Message implements Serializable {
     // CLIENT
     private Card card;
     private int indexPlayer;
+    private int whosHand;
     private int whoHasPlayed;
 
     /**
@@ -26,11 +27,12 @@ public class Message implements Serializable {
         this.player = player;
     }
 
-    public Message(Command command, List<Card> deck, int index, Trump masterTrump) {
+    public Message(Command command, List<Card> deck, int index, Trump masterTrump, int whosHand) {
         this.command = command;
         this.deck = deck;
         this.indexPlayer = index;
         this.masterTrump = masterTrump;
+        this.whosHand = whosHand;
     }
 
     public Message(Command command, Card[] playedCards, int whoHasPlayed) {
@@ -85,5 +87,9 @@ public class Message implements Serializable {
 
     public int getWhoHasPlayed() {
         return whoHasPlayed;
+    }
+
+    public int getWhosHand() {
+        return whosHand;
     }
 }

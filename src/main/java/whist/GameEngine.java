@@ -163,7 +163,7 @@ public class GameEngine extends Thread {
         Collections.shuffle(deck);
         for (int i = 0; i < 4; ++i) {
             players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
-            players.get(i).connected(players.get(i).getDeck(), i, masterTrump);
+            players.get(i).connected(players.get(i).getDeck(), i, masterTrump, whosHand);
         }
     }
 

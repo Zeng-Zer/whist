@@ -35,6 +35,7 @@ public class Player implements Serializable {
     private boolean hasToPlay = false;
     private int[] othersCards = {13, 13, 13, 13};
     private Card[] playedCard = {null, null, null, null};
+    private JLabel[] actives = {new JLabel(), new JLabel(), new JLabel(), new JLabel()};
     private Map<Trump, String> trumpIcons = new HashMap<>();
 
     JFrame f;
@@ -79,7 +80,7 @@ public class Player implements Serializable {
         playerCard.setLayout(null);
         playerCard.setBackground(null);
         center.setLayout(null);
-        //center.setBackground(null);
+        center.setBackground(null);
         c.gridx = 2;
         c.gridy = 3;
         c.ipady = 141;
@@ -88,6 +89,7 @@ public class Player implements Serializable {
         c.gridx = 2;
         c.gridy = 1;
         c.ipady = 520;
+        c.insets.right = 13;
         mainPanel.add(center, c);
         f.add(mainPanel);
         f.pack();
@@ -156,6 +158,7 @@ public class Player implements Serializable {
                     deck = sortDeck(message.getDeck());
                     index = message.getIndexPlayer();
                     masterTrump = message.getMasterTrump();
+                    actives[message.getWhosHand()].setIcon(new ImageIcon("resources/player-active.png"));
                     createGUI();
                     break;
 
@@ -166,6 +169,7 @@ public class Player implements Serializable {
                     team = message.getPlayer().team;
                     points = message.getPlayer().points;
                     hasToPlay = true;
+                    actives[index].setIcon(new ImageIcon("resources/player-active.png"));
                     roundTrump = message.getTrump();
                     break;
 
@@ -175,8 +179,11 @@ public class Player implements Serializable {
                     for (Card c : playedCard) {
                         System.out.println(c);
                     }
+                    for (int i = 0; i < 4; i++)
+                        actives[i].setIcon(new ImageIcon("resources/player.png"));
                     if (whoHasPlayed != index)
                         othersCards[whoHasPlayed] -= 1;
+                    actives[(whoHasPlayed + 1) % 4].setIcon(new ImageIcon("resources/player-active.png"));
                     break;
                 case QUIT:
                     System.out.println("Quit");
@@ -230,8 +237,15 @@ public class Player implements Serializable {
         else {
             t.setIcon(new ImageIcon(new ImageIcon(trumpIcons.get(trump)).getImage()));
         }
-        mainPanel.add(t,  new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.0, anchor,
+        mainPanel.add(t, new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.0, anchor,
                 GridBagConstraints.NONE, new Insets(top, 0, 0, right), 0, 0));
+    }
+
+    private void drawPlayerIcon(int i, int anchor, int gridx, int gridy, int top, int left, int bottom, int right) {
+        if (actives[i].getIcon() == null)
+            actives[i].setIcon(new ImageIcon("resources/player.png"));
+        mainPanel.add(actives[i],  new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.1, anchor,
+                GridBagConstraints.NONE, new Insets(top, left, bottom, right), 0, 0));
     }
 
     private void draw() {
@@ -243,6 +257,10 @@ public class Player implements Serializable {
 
         p.removeAll();
         center.removeAll();
+        for (int i = 0; i < 4; i++)
+            System.out.println(actives[i]);
+        drawPlayerIcon(index, GridBagConstraints.LINE_END, 1, 3, 60, 0, 0,10);
+
         drawTrump(Trump.HEART, GridBagConstraints.EAST, 4, 0, -70, 10);
         drawTrump(Trump.SPADE, GridBagConstraints.LINE_END, 4, 4, 0, 0);
         drawTrump(Trump.DIAMOND, GridBagConstraints.LINE_START, 0, 4, 0, 0);
@@ -279,6 +297,7 @@ public class Player implements Serializable {
                     c.ipadx = 141;
                     if (playedCard[tmpIndex] != null)
                         playedCard[tmpIndex].button.setLocation(100, 160);
+                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 1, 0, 60, 0, 0,0);
                     break;
                 case 1:
                     c.gridx = 2;
@@ -286,6 +305,7 @@ public class Player implements Serializable {
                     c.ipady = 141;
                     if (playedCard[tmpIndex] != null)
                         playedCard[tmpIndex].button.setLocation(300, 50);
+                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 3, 0, 60, 10, 0, 0);
                     break;
                 case 2:
                     c.gridx = 3;
@@ -294,6 +314,7 @@ public class Player implements Serializable {
                     c.ipadx = 141;
                     if (playedCard[tmpIndex] != null)
                         playedCard[tmpIndex].button.setLocation(500, 160);
+                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_END,3, 3, 0, 0, 50,0);
                     break;
                 default:
                     break;
@@ -302,7 +323,7 @@ public class Player implements Serializable {
                 center.add(playedCard[tmpIndex].button);
             mainPanel.add(other, c);
             tmpIndex = (tmpIndex + 1) % 4;
-       }
+        }
         createCards();
         p.revalidate();
         center.revalidate();
@@ -331,9 +352,9 @@ public class Player implements Serializable {
         os.writeObject(message);
     }
 
-    public void connected(List<Card> deck, int index, Trump masterTrump) throws IOException {
+    public void connected(List<Card> deck, int index, Trump masterTrump, int whosHand) throws IOException {
         List<Card> newDeck = new ArrayList<>(deck);
-        Message message = new Message(Command.CONNECT, newDeck, index, masterTrump);
+        Message message = new Message(Command.CONNECT, newDeck, index, masterTrump, whosHand);
 
         os.writeObject(message);
     }
