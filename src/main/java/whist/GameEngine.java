@@ -3,6 +3,7 @@ package whist;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -75,14 +76,14 @@ public class GameEngine extends Thread {
     private void playRound() throws Exception {
         Player player;
         int i = topPlayer.getIndex();
-        Card[] playedCards = {null, null, null, null};
+        List<Card> playedCards = Arrays.asList(new Card[]{null, null, null, null});
 
         System.out.println(topPlayer.getName() + " has to play");
 
         for (int turn = 0; turn < 4; turn++) {
             player = players.get(i);
             Card cardPlayed = player.play(roundTrump);
-            playedCards[i] = cardPlayed;
+            playedCards.set(i, cardPlayed);
 
             // Change top player
             if (turn == 0 || cardIsStronger(cardPlayed)) {
@@ -167,7 +168,7 @@ public class GameEngine extends Thread {
         }
     }
 
-    private void sendPlayedCard(Card[] playedCards, int whoHasPlayed) {
+    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) {
         for (Player p : players) {
             try {
                 p.sendPlayedCard(playedCards, whoHasPlayed);

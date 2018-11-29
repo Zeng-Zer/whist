@@ -13,10 +13,10 @@ public class Server {
 
         Map<Trump, Map<Value, String>> deck = new HashMap<>();
 
-        Map<Value, String> heartMap = new HashMap<Value, String>();
-        Map<Value, String> diamondMap = new HashMap<Value, String>();
-        Map<Value, String> spadeMap = new HashMap<Value, String>();
-        Map<Value, String> clubMap = new HashMap<Value, String>();
+        Map<Value, String> heartMap = new HashMap<>();
+        Map<Value, String> diamondMap = new HashMap<>();
+        Map<Value, String> spadeMap = new HashMap<>();
+        Map<Value, String> clubMap = new HashMap<>();
 
         heartMap.put(Value.ACE, "resources/heart/As.png");
         heartMap.put(Value.TWO, "resources/heart/Two.png");

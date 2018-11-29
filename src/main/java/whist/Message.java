@@ -6,7 +6,7 @@ import java.util.List;
 public class Message implements Serializable {
     private Command command;
     // SERVER
-    private Card[] playedCards;
+    private List<Card> playedCards;
     private Trump trump;
     private Trump masterTrump;
     private Player player;
@@ -35,7 +35,7 @@ public class Message implements Serializable {
         this.whosHand = whosHand;
     }
 
-    public Message(Command command, Card[] playedCards, int whoHasPlayed) {
+    public Message(Command command, List<Card> playedCards, int whoHasPlayed) {
         this.command = command;
         this.playedCards = playedCards;
         System.out.println("FROM MESSAGE: ");
@@ -61,7 +61,7 @@ public class Message implements Serializable {
         return command;
     }
 
-    public Card[] getPlayedCards() {
+    public List<Card> getPlayedCards() {
         System.out.println("FROM GETTER: ");
         for (Card c : this.playedCards) {
             System.out.println(c);

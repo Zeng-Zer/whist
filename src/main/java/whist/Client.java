@@ -2,13 +2,12 @@ package whist;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 
 public class Client {
 
     static JFrame f;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) {
 
         System.out.println("Connecting to server");
         f = new JFrame();

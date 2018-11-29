@@ -10,14 +10,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Thread.sleep;
-import static javax.swing.SpringLayout.*;
 import static whist.Command.QUIT;
 
 public class Player implements Serializable {
@@ -35,7 +33,7 @@ public class Player implements Serializable {
     private Trump masterTrump;
     private boolean hasToPlay = false;
     private int[] othersCards = {13, 13, 13, 13};
-    private Card[] playedCard = {null, null, null, null};
+    private List<Card> playedCard = Arrays.asList(new Card[]{null, null, null, null});
     private JLabel[] actives = {new JLabel(), new JLabel(), new JLabel(), new JLabel()};
     private JPanel[] othersCardsPanel = {new JPanel(), new JPanel(), new JPanel()};
     private JLabel errorMsg = new JLabel();
@@ -243,15 +241,15 @@ public class Player implements Serializable {
             card.button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    if (hasToPlay == false) {
+                    if (!hasToPlay) {
                         errorMsg.setText("It's not your turn to play");
-                        return ;
+                        return;
                     }
                     if (isTrumpInDeck(roundTrump) && card.getTrump() != roundTrump) {
                         errorMsg.setText("You have " + String.valueOf(roundTrump) + " in your deck, you should play it");
-                        return ;
+                        return;
                     }
-                    playedCard[index] = deck.remove(deck.indexOf(card));
+                    playedCard.set(index, deck.remove(deck.indexOf(card)));
                     System.out.println("Player " + name + " played: " + card.toString() + ", card left: " + deck.size());
                     Message response = new Message(card);
                     try {
@@ -310,9 +308,9 @@ public class Player implements Serializable {
         drawTrump(Trump.DIAMOND, GridBagConstraints.LINE_START, 0, 4, 0, 0);
         drawTrump(Trump.CLUB, GridBagConstraints.WEST, 0, 0, -70, 10);
 
-        if (playedCard[index] != null) {
-            playedCard[index].button.setLocation(300, 320);
-            center.add(playedCard[index].button);
+        if (playedCard.get(index) != null) {
+            playedCard.get(index).button.setLocation(300, 320);
+            center.add(playedCard.get(index).button);
         }
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < othersCards[tmpIndex]; j++) {
@@ -332,25 +330,25 @@ public class Player implements Serializable {
             }
             switch (i) {
                 case 0:
-                    if (playedCard[tmpIndex] != null)
-                        playedCard[tmpIndex].button.setLocation(100, 160);
+                    if (playedCard.get(tmpIndex) != null)
+                        playedCard.get(tmpIndex).button.setLocation(100, 160);
                     drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 1, 0, 60, 0, 0,0);
                     break;
                 case 1:
-                    if (playedCard[tmpIndex] != null)
-                        playedCard[tmpIndex].button.setLocation(300, 50);
+                    if (playedCard.get(tmpIndex) != null)
+                        playedCard.get(tmpIndex).button.setLocation(300, 50);
                     drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 3, 0, 60, 10, 0, 0);
                     break;
                 case 2:
-                    if (playedCard[tmpIndex] != null)
-                        playedCard[tmpIndex].button.setLocation(500, 160);
+                    if (playedCard.get(tmpIndex) != null)
+                        playedCard.get(tmpIndex).button.setLocation(500, 160);
                     drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_END,3, 3, 0, 0, 50,0);
                     break;
                 default:
                     break;
             }
-            if (playedCard[tmpIndex] != null)
-                center.add(playedCard[tmpIndex].button);
+            if (playedCard.get(tmpIndex) != null)
+                center.add(playedCard.get(tmpIndex).button);
             tmpIndex = (tmpIndex + 1) % 4;
         }
         createCards();
@@ -395,8 +393,9 @@ public class Player implements Serializable {
         return name;
     }
 
-    public void sendPlayedCard(Card[] playedCards, int whoHasPlayed) throws IOException {
-        Message message = new Message(Command.CARD_RESPONSE, playedCards, whoHasPlayed);
+    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) throws IOException {
+        List<Card> newPlayedCards = new ArrayList<>(playedCards);
+        Message message = new Message(Command.CARD_RESPONSE, newPlayedCards, whoHasPlayed);
         os.writeObject(message);
     }
 }
