@@ -62,6 +62,10 @@ public class Message implements Serializable {
     }
 
     public Card[] getPlayedCards() {
+        System.out.println("FROM GETTER: ");
+        for (Card c : this.playedCards) {
+            System.out.println(c);
+        }
         return playedCards;
     }
 
