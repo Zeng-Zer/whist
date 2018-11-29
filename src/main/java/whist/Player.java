@@ -37,6 +37,7 @@ public class Player implements Serializable {
     private int[] othersCards = {13, 13, 13, 13};
     private Card[] playedCard = {null, null, null, null};
     private JLabel[] actives = {new JLabel(), new JLabel(), new JLabel(), new JLabel()};
+    private JPanel[] othersCardsPanel = {new JPanel(), new JPanel(), new JPanel()};
     private JLabel errorMsg = new JLabel();
     private Map<Trump, String> trumpIcons = new HashMap<>();
 
@@ -79,26 +80,53 @@ public class Player implements Serializable {
         c.fill = GridBagConstraints.HORIZONTAL;
 
         mainPanel.setBackground(new Color(0, 102, 0));
-        playerCard.setLayout(null);
-        playerCard.setBackground(null);
-        center.setLayout(null);
-        center.setBackground(null);
         errorMsg.setBackground(new Color(0xD1c30D));
         errorMsg.setOpaque(true);
         errorMsg.setSize(new Dimension(700, 30));
         errorMsg.setBorder(new EmptyBorder(0, 10, 0, 10));
         errorMsg.setLocation(0, 480);
-        center.add(errorMsg);
+
+        playerCard.setLayout(null);
+        playerCard.setBackground(null);
         c.gridx = 2;
         c.gridy = 3;
         c.ipady = 141;
         c.ipadx = 700;
         mainPanel.add(playerCard, c);
+
+        othersCardsPanel[0].setLayout(null);
+        othersCardsPanel[0].setBackground(null);
+        c.gridx = 1;
+        c.gridy = 1;
+        c.ipady = 520;
+        c.ipadx = 141;
+        mainPanel.add(othersCardsPanel[0], c);
+
+        othersCardsPanel[1].setLayout(null);
+        othersCardsPanel[1].setBackground(null);
+        c.gridx = 2;
+        c.gridy = 0;
+        c.ipady = 141;
+        mainPanel.add(othersCardsPanel[1], c);
+
+        othersCardsPanel[2].setLayout(null);
+        othersCardsPanel[2].setBackground(null);
+        c.gridx = 3;
+        c.gridy = 1;
+        c.ipady = 520;
+        c.ipadx = 141;
+        mainPanel.add(othersCardsPanel[2], c);
+
+        center.setLayout(null);
+        center.setBackground(null);
+        center.add(errorMsg);
         c.gridx = 2;
         c.gridy = 1;
         c.ipady = 520;
         c.insets.right = 13;
         mainPanel.add(center, c);
+
+
         f.add(mainPanel);
         f.pack();
         f.setLocationRelativeTo(null);
@@ -170,7 +198,7 @@ public class Player implements Serializable {
                     if (message.getWhosHand() == index)
                         errorMsg.setText("Your turn");
                     else
-                        errorMsg.setText("Player " + message.getWhosHand() + 1 + " turn's");
+                        errorMsg.setText("Player " + ((message.getWhosHand() + 1) % 4) + " turn's");
                     createGUI();
                     break;
 
@@ -188,9 +216,9 @@ public class Player implements Serializable {
                 case CARD_RESPONSE:
                     playedCard = message.getPlayedCards();
                     int whoHasPlayed = message.getWhoHasPlayed();
-                    for (Card c : playedCard) {
+                    /*for (Card c : playedCard) {
                         System.out.println(c);
-                    }
+                    }*/
                     for (int i = 0; i < 4; i++)
                         actives[i].setIcon(new ImageIcon("resources/player.png"));
                     if (whoHasPlayed != index)
@@ -198,7 +226,7 @@ public class Player implements Serializable {
                     if ((whoHasPlayed + 1) % 4 == index)
                         errorMsg.setText("Your turn");
                     else
-                        errorMsg.setText("Player " + (whoHasPlayed + 1) % 4 + 1 + " turn's");
+                        errorMsg.setText("Player " + ((whoHasPlayed + 1) % 4 + 1) + " turn's");
                     actives[(whoHasPlayed + 1) % 4].setIcon(new ImageIcon("resources/player-active.png"));
                     break;
                 case QUIT:
@@ -270,12 +298,13 @@ public class Player implements Serializable {
     private void draw() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
-        JPanel other;
-        JPanel p = playerCard;
         int tmpIndex = (index + 1) % 4;
 
-        p.removeAll();
+        for (JPanel p : othersCardsPanel)
+            p.removeAll();
+        playerCard.removeAll();
         center.removeAll();
+
         drawPlayerIcon(index, GridBagConstraints.LINE_END, 1, 3, 60, 0, 0,10);
 
         drawTrump(Trump.HEART, GridBagConstraints.EAST, 4, 0, -70, 10);
@@ -288,9 +317,6 @@ public class Player implements Serializable {
             center.add(playedCard[index].button);
         }
         for (int i = 0; i < 3; i++) {
-            other = new JPanel();
-            other.setLayout(null);
-            other.setBackground(new Color(0, 102, 0));
             for (int j = 0; j < othersCards[tmpIndex]; j++) {
                 JButton img = new JButton();
                 img.setBorder(BorderFactory.createEmptyBorder());
@@ -304,31 +330,20 @@ public class Player implements Serializable {
                     img.setSize(new Dimension(141, 100));
                     img.setLocation(0, j * 35);
                 }
-                other.add(img);
+                othersCardsPanel[i].add(img);
             }
             switch (i) {
                 case 0:
-                    c.gridx = 1;
-                    c.gridy = 1;
-                    c.ipady = 520;
-                    c.ipadx = 141;
                     if (playedCard[tmpIndex] != null)
                         playedCard[tmpIndex].button.setLocation(100, 160);
                     drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 1, 0, 60, 0, 0,0);
                     break;
                 case 1:
-                    c.gridx = 2;
-                    c.gridy = 0;
-                    c.ipady = 141;
                     if (playedCard[tmpIndex] != null)
                         playedCard[tmpIndex].button.setLocation(300, 50);
                     drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 3, 0, 60, 10, 0, 0);
                     break;
                 case 2:
-                    c.gridx = 3;
-                    c.gridy = 1;
-                    c.ipady = 520;
-                    c.ipadx = 141;
                     if (playedCard[tmpIndex] != null)
                         playedCard[tmpIndex].button.setLocation(500, 160);
                     drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_END,3, 3, 0, 0, 50,0);
@@ -338,15 +353,19 @@ public class Player implements Serializable {
             }
             if (playedCard[tmpIndex] != null)
                 center.add(playedCard[tmpIndex].button);
-            mainPanel.add(other, c);
             tmpIndex = (tmpIndex + 1) % 4;
         }
         createCards();
         center.add(errorMsg);
-        p.revalidate();
+
+        for (JPanel p : othersCardsPanel) {
+            p.revalidate();
+            p.repaint();
+        }
         center.revalidate();
-        p.repaint();
         center.repaint();
+        playerCard.revalidate();
+        playerCard.repaint();
     }
 
     // Server calls this function

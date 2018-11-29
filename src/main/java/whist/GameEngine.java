@@ -91,9 +91,9 @@ public class GameEngine extends Thread {
                 topPlayer = player;
             }
 
-            for (Card c : playedCards)
+          /*  for (Card c : playedCards)
                 System.out.println(c);
-
+*/
             sendPlayedCard(playedCards, i);
             i = (i + 1) % 4;
 

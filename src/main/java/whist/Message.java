@@ -6,7 +6,7 @@ import java.util.List;
 public class Message implements Serializable {
     private Command command;
     // SERVER
-    private Card[] playedCards = {null, null, null, null};
+    private Card[] playedCards;
     private Trump trump;
     private Trump masterTrump;
     private Player player;
@@ -38,6 +38,10 @@ public class Message implements Serializable {
     public Message(Command command, Card[] playedCards, int whoHasPlayed) {
         this.command = command;
         this.playedCards = playedCards;
+        System.out.println("FROM MESSAGE: ");
+        for (Card c : this.playedCards) {
+            System.out.println(c);
+        }
         this.whoHasPlayed = whoHasPlayed;
     }
 
