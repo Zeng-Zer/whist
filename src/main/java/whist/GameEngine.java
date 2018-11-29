@@ -108,7 +108,7 @@ public class GameEngine extends Thread {
         players.clear();
         for (int i = 0; i < 4; ++i) {
             System.out.println("Waiting for player to connect");
-            players.add(new Player(listener.accept(), "player: " + (i + 1), i));
+            players.add(new Player(listener.accept(), "Player" + (i + 1), i));
             System.out.println("Player " + (i + 1) + " connected");
             //players.get(i).connected(players.get(i).getDeck(), i, masterTrump);
         }
@@ -167,7 +167,7 @@ public class GameEngine extends Thread {
         }
     }
 
-    private void sendPlayedCard(Card[] playedCards, int whoHasPlayed) throws ClassNotFoundException {
+    private void sendPlayedCard(Card[] playedCards, int whoHasPlayed) {
         for (Player p : players) {
             try {
                 p.sendPlayedCard(playedCards, whoHasPlayed);

@@ -66,7 +66,7 @@ public class Player implements Serializable {
     }
 
     public void createGUI() {
-        this.f =  new JFrame();
+        this.f =  Client.f;
         f.setTitle(name);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setPreferredSize(new Dimension(1200, 900));
@@ -126,19 +126,17 @@ public class Player implements Serializable {
         c.insets.right = 13;
         mainPanel.add(center, c);
 
-
-        f.add(mainPanel);
+        f.getContentPane().removeAll();
+        f.setContentPane(mainPanel);
         f.pack();
         f.setLocationRelativeTo(null);
         f.setVisible(true);
+        f.revalidate();
+        f.repaint();
     }
 
     public List<Card> getDeck() {
         return deck;
-    }
-
-    public void setDeck(List<Card> deck) {
-        this.deck = deck;
     }
 
     public String getName() {
@@ -389,11 +387,12 @@ public class Player implements Serializable {
         os.writeObject(message);
     }
 
-    public void connected(List<Card> deck, int index, Trump masterTrump, int whosHand) throws IOException {
+    public String connected(List<Card> deck, int index, Trump masterTrump, int whosHand) throws IOException {
         List<Card> newDeck = new ArrayList<>(deck);
         Message message = new Message(Command.CONNECT, newDeck, index, masterTrump, whosHand);
 
         os.writeObject(message);
+        return name;
     }
 
     public void sendPlayedCard(Card[] playedCards, int whoHasPlayed) throws IOException {
