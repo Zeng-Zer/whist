@@ -1,10 +1,7 @@
 package whist;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,11 +9,9 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import static whist.Command.QUIT;
+import java.util.List;
+
 
 public class Player implements Serializable {
     private transient Socket socket;
@@ -32,17 +27,11 @@ public class Player implements Serializable {
     private Trump roundTrump;
     private Trump masterTrump;
     private boolean hasToPlay = false;
-    private int[] othersCards = {13, 13, 13, 13};
-    private List<Card> playedCard = Arrays.asList(new Card[]{null, null, null, null});
-    private JLabel[] actives = {new JLabel(), new JLabel(), new JLabel(), new JLabel()};
-    private JPanel[] othersCardsPanel = {new JPanel(), new JPanel(), new JPanel()};
-    private JLabel errorMsg = new JLabel();
-    private Map<Trump, String> trumpIcons = new HashMap<>();
+    public int[] othersCards = {13, 13, 13, 13};
+    public List<Card> playedCard = Arrays.asList(new Card[]{null, null, null, null});
 
     JFrame f;
-    JPanel mainPanel = new JPanel();
-    JPanel playerCard = new JPanel();
-    JPanel center = new JPanel();
+    GameInterface mainPanel;
 
     // Server constructor
     public Player(Socket socket, String name, int id) throws IOException {
@@ -68,61 +57,7 @@ public class Player implements Serializable {
         f.setTitle(name);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setPreferredSize(new Dimension(1200, 900));
-
-        trumpIcons.put(Trump.HEART, "resources/Heart.png");
-        trumpIcons.put(Trump.CLUB, "resources/Club.png");
-        trumpIcons.put(Trump.DIAMOND, "resources/Diamond.png");
-        trumpIcons.put(Trump.SPADE, "resources/Spade.png");
-        mainPanel.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-        mainPanel.setBackground(new Color(0, 102, 0));
-        errorMsg.setBackground(new Color(0xD1c30D));
-        errorMsg.setOpaque(true);
-        errorMsg.setSize(new Dimension(700, 30));
-        errorMsg.setBorder(new EmptyBorder(0, 10, 0, 10));
-        errorMsg.setLocation(0, 480);
-
-        playerCard.setLayout(null);
-        playerCard.setBackground(null);
-        c.gridx = 2;
-        c.gridy = 3;
-        c.ipady = 141;
-        c.ipadx = 700;
-        mainPanel.add(playerCard, c);
-
-        othersCardsPanel[0].setLayout(null);
-        othersCardsPanel[0].setBackground(null);
-        c.gridx = 1;
-        c.gridy = 1;
-        c.ipady = 520;
-        c.ipadx = 141;
-        mainPanel.add(othersCardsPanel[0], c);
-
-        othersCardsPanel[1].setLayout(null);
-        othersCardsPanel[1].setBackground(null);
-        c.gridx = 2;
-        c.gridy = 0;
-        c.ipady = 141;
-        mainPanel.add(othersCardsPanel[1], c);
-
-        othersCardsPanel[2].setLayout(null);
-        othersCardsPanel[2].setBackground(null);
-        c.gridx = 3;
-        c.gridy = 1;
-        c.ipady = 520;
-        c.ipadx = 141;
-        mainPanel.add(othersCardsPanel[2], c);
-
-        center.setLayout(null);
-        center.setBackground(null);
-        center.add(errorMsg);
-        c.gridx = 2;
-        c.gridy = 1;
-        c.ipady = 520;
-        c.insets.right = 13;
-        mainPanel.add(center, c);
+        mainPanel = new GameInterface(this);
 
         f.getContentPane().removeAll();
         f.setContentPane(mainPanel);
@@ -131,6 +66,87 @@ public class Player implements Serializable {
         f.setVisible(true);
         f.revalidate();
         f.repaint();
+    }
+
+    public boolean isTrumpInDeck(Trump trump) {
+        for (Card card : deck) {
+            if (card.getTrump() == trump) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<Card> sortDeck(List<Card> deck) {
+        List<Card> newDeck = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            System.out.println(Trump.values()[i]);
+            for (Card card : deck) {
+                if (Trump.values()[i] == card.getTrump()) {
+                    newDeck.add(card);
+                }
+            }
+        }
+        return newDeck;
+    }
+
+    // Client calls this function
+    public void run() throws IOException, ClassNotFoundException {
+        while (true) {
+            System.out.println("Waiting for command");
+            Message message = (Message) is.readObject();
+
+            // Read command
+            switch (message.getCommand()) {
+                case CONNECT:
+                    othersCards[0] = 13;
+                    othersCards[1] = 13;
+                    othersCards[2] = 13;
+                    othersCards[3] = 13;
+                    deck = sortDeck(message.getDeck());
+                    index = message.getIndexPlayer();
+                    masterTrump = message.getMasterTrump();
+                    if (message.isFirstTime())
+                        createGUI();
+                    break;
+
+                case PLAY:
+                    // Initialize variables
+                    deck = message.getDeck();
+                    name = message.getPlayer().name;
+                    team = message.getPlayer().team;
+                    points = message.getPlayer().points;
+                    hasToPlay = true;
+                    mainPanel.getActives()[index].setIcon(new ImageIcon("resources/player-active.png"));
+                    roundTrump = message.getTrump();
+                    break;
+
+                case CARD_RESPONSE:
+                    playedCard = message.getPlayedCards();
+                    int whoHasPlayed = message.getWhoHasPlayed();
+                    for (int i = 0; i < 4; i++)
+                        mainPanel.getActives()[i].setIcon(new ImageIcon("resources/player.png"));
+                    if (!message.isFirstTime() && whoHasPlayed != index)
+                        othersCards[whoHasPlayed] -= 1;
+                    if ((whoHasPlayed + 1) % 4 == index)
+                        mainPanel.getErrorMsg().setText("Your turn");
+                    else
+                        mainPanel.getErrorMsg().setText("Player " + ((whoHasPlayed + 1) % 4 + 1) + " turn's");
+                        mainPanel.getActives()[(whoHasPlayed + 1) % 4].setIcon(new ImageIcon("resources/player-active.png"));
+                    break;
+                case QUIT:
+                    System.out.println("Quit");
+                    socket.close();
+                    System.exit(0);
+                default:
+                    break;
+            }
+            draw();
+        }
+    }
+
+    private void draw() {
+        mainPanel.draw();
     }
 
     public List<Card> getDeck() {
@@ -157,212 +173,26 @@ public class Player implements Serializable {
         return index;
     }
 
-    private boolean isTrumpInDeck(Trump trump) {
-        for (Card card : deck) {
-            if (card.getTrump() == trump) {
-                return true;
-            }
-        }
-        return false;
+    public boolean isHasToPlay() {
+        return hasToPlay;
     }
 
-    private List<Card> sortDeck(List<Card> deck) {
-        List<Card> newDeck = new ArrayList<>();
-        for (int i = 0; i < 4; ++i) {
-            for (Card card : deck) {
-                if (Trump.values()[i] == card.getTrump()) {
-                    newDeck.add(card);
-                }
-            }
-        }
-        return newDeck;
+    public void setHasToPlay(boolean hasToPlay) {
+        this.hasToPlay = hasToPlay;
     }
 
-    // Client calls this function
-    public void run() throws IOException, ClassNotFoundException {
-        while (true) {
-            System.out.println("Waiting for command");
-            Message message = (Message) is.readObject();
-
-            // Read command
-            switch (message.getCommand()) {
-                case CONNECT:
-                    deck = sortDeck(message.getDeck());
-                    index = message.getIndexPlayer();
-                    masterTrump = message.getMasterTrump();
-                    actives[message.getWhosHand()].setIcon(new ImageIcon("resources/player-active.png"));
-                    if (message.getWhosHand() == index)
-                        errorMsg.setText("Your turn");
-                    else
-                        errorMsg.setText("Player " + ((message.getWhosHand() + 1) % 4) + " turn's");
-                    createGUI();
-                    break;
-
-                case PLAY:
-                    // Initialize variables
-                    deck = message.getDeck();
-                    name = message.getPlayer().name;
-                    team = message.getPlayer().team;
-                    points = message.getPlayer().points;
-                    hasToPlay = true;
-                    actives[index].setIcon(new ImageIcon("resources/player-active.png"));
-                    roundTrump = message.getTrump();
-                    break;
-
-                case CARD_RESPONSE:
-                    playedCard = message.getPlayedCards();
-                    int whoHasPlayed = message.getWhoHasPlayed();
-                    /*for (Card c : playedCard) {
-                        System.out.println(c);
-                    }*/
-                    for (int i = 0; i < 4; i++)
-                        actives[i].setIcon(new ImageIcon("resources/player.png"));
-                    if (whoHasPlayed != index)
-                        othersCards[whoHasPlayed] -= 1;
-                    if ((whoHasPlayed + 1) % 4 == index)
-                        errorMsg.setText("Your turn");
-                    else
-                        errorMsg.setText("Player " + ((whoHasPlayed + 1) % 4 + 1) + " turn's");
-                    actives[(whoHasPlayed + 1) % 4].setIcon(new ImageIcon("resources/player-active.png"));
-                    break;
-                case QUIT:
-                    System.out.println("Quit");
-                    socket.close();
-                    System.exit(0);
-                default:
-                    break;
-            }
-            draw();
-        }
+    public Trump getMasterTrump() {
+        return masterTrump;
     }
 
-    public void createCards() {
-        for (Card card : deck) {
-            card.button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    if (!hasToPlay) {
-                        errorMsg.setText("It's not your turn to play");
-                        return;
-                    }
-                    if (isTrumpInDeck(roundTrump) && card.getTrump() != roundTrump) {
-                        errorMsg.setText("You have " + String.valueOf(roundTrump) + " in your deck, you should play it");
-                        return;
-                    }
-                    playedCard.set(index, deck.remove(deck.indexOf(card)));
-                    System.out.println("Player " + name + " played: " + card.toString() + ", card left: " + deck.size());
-                    Message response = new Message(card);
-                    try {
-                        os.writeObject(response);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    draw();
-                    hasToPlay = false;
-                }
-            });
-            card.button.setSize(100, 141);
-            card.button.setLocation(deck.indexOf(card) * 50, 0);
-            playerCard.add(card.button);
-        }
+    public Trump getRoundTrump() {
+        return roundTrump;
     }
 
-    private void drawTrump(Trump trump, int anchor, int gridx, int gridy,int top, int right) {
-        JLabel t;
-        t = new JLabel();
-
-        if (masterTrump != trump) {
-            t.setIcon(new ImageIcon(GrayFilter.createDisabledImage(new ImageIcon(trumpIcons.get(trump)).getImage())));
-        }
-        else {
-            t.setIcon(new ImageIcon(new ImageIcon(trumpIcons.get(trump)).getImage()));
-        }
-        mainPanel.add(t, new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.0, anchor,
-                GridBagConstraints.NONE, new Insets(top, 0, 0, right), 0, 0));
+    public ObjectOutputStream getOs() {
+        return os;
     }
 
-    private void drawPlayerIcon(int i, int anchor, int gridx, int gridy, int top, int left, int bottom, int right) {
-        if (actives[i].getIcon() == null)
-            actives[i].setIcon(new ImageIcon("resources/player.png"));
-    /*    actives[i].setText(name + ": " + points);
-        actives[i].setHorizontalTextPosition(JLabel.CENTER);
-        actives[i].setVerticalTextPosition(JLabel.BOTTOM);
-    */    mainPanel.add(actives[i],  new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.1, anchor,
-                GridBagConstraints.NONE, new Insets(top, left, bottom, right), 0, 0));
-    }
-
-    private void draw() {
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
-        int tmpIndex = (index + 1) % 4;
-
-        for (JPanel p : othersCardsPanel)
-            p.removeAll();
-        playerCard.removeAll();
-        center.removeAll();
-
-        drawPlayerIcon(index, GridBagConstraints.LINE_END, 1, 3, 60, 0, 0,10);
-
-        drawTrump(Trump.HEART, GridBagConstraints.EAST, 4, 0, -70, 10);
-        drawTrump(Trump.SPADE, GridBagConstraints.LINE_END, 4, 4, 0, 0);
-        drawTrump(Trump.DIAMOND, GridBagConstraints.LINE_START, 0, 4, 0, 0);
-        drawTrump(Trump.CLUB, GridBagConstraints.WEST, 0, 0, -70, 10);
-
-        if (playedCard.get(index) != null) {
-            playedCard.get(index).button.setLocation(300, 320);
-            center.add(playedCard.get(index).button);
-        }
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < othersCards[tmpIndex]; j++) {
-                JButton img = new JButton();
-                img.setBorder(BorderFactory.createEmptyBorder());
-                img.setContentAreaFilled(false);
-                if (i % 2 != 0) {
-                    img.setIcon(new ImageIcon("resources/DosCarte.png"));
-                    img.setSize(new Dimension(100, 141));
-                    img.setLocation(j * 50, 0);
-                } else {
-                    img.setIcon(new ImageIcon("resources/DosCarte2.png"));
-                    img.setSize(new Dimension(141, 100));
-                    img.setLocation(0, j * 35);
-                }
-                othersCardsPanel[i].add(img);
-            }
-            switch (i) {
-                case 0:
-                    if (playedCard.get(tmpIndex) != null)
-                        playedCard.get(tmpIndex).button.setLocation(100, 160);
-                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 1, 0, 60, 0, 0,0);
-                    break;
-                case 1:
-                    if (playedCard.get(tmpIndex) != null)
-                        playedCard.get(tmpIndex).button.setLocation(300, 50);
-                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 3, 0, 60, 10, 0, 0);
-                    break;
-                case 2:
-                    if (playedCard.get(tmpIndex) != null)
-                        playedCard.get(tmpIndex).button.setLocation(500, 160);
-                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_END,3, 3, 0, 0, 50,0);
-                    break;
-                default:
-                    break;
-            }
-            if (playedCard.get(tmpIndex) != null)
-                center.add(playedCard.get(tmpIndex).button);
-            tmpIndex = (tmpIndex + 1) % 4;
-        }
-        createCards();
-        center.add(errorMsg);
-
-        for (JPanel p : othersCardsPanel) {
-            p.revalidate();
-            p.repaint();
-        }
-        center.revalidate();
-        center.repaint();
-        playerCard.revalidate();
-        playerCard.repaint();
-    }
 
     // Server calls this function
     public Card play(Trump roundTrump) throws IOException, ClassNotFoundException {
@@ -381,21 +211,21 @@ public class Player implements Serializable {
     }
 
     public void quit() throws IOException {
-        Message message = new Message(QUIT);
+        Message message = new Message(Command.QUIT);
         os.writeObject(message);
     }
 
-    public String connected(List<Card> deck, int index, Trump masterTrump, int whosHand) throws IOException {
+    public String connected(List<Card> deck, int index, Trump masterTrump, boolean firstTime) throws IOException {
         List<Card> newDeck = new ArrayList<>(deck);
-        Message message = new Message(Command.CONNECT, newDeck, index, masterTrump, whosHand);
+        Message message = new Message(Command.CONNECT, newDeck, index, masterTrump, firstTime);
 
         os.writeObject(message);
         return name;
     }
 
-    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) throws IOException {
+    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, boolean firstTime) throws IOException {
         List<Card> newPlayedCards = new ArrayList<>(playedCards);
-        Message message = new Message(Command.CARD_RESPONSE, newPlayedCards, whoHasPlayed);
+        Message message = new Message(Command.CARD_RESPONSE, newPlayedCards, whoHasPlayed, firstTime);
         os.writeObject(message);
     }
 }

@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class GameEngine extends Thread {
     private Trump masterTrump;
@@ -36,7 +37,7 @@ public class GameEngine extends Thread {
                 e.printStackTrace();
             }
             try {
-                resetHand();
+                resetHand(false);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -78,6 +79,7 @@ public class GameEngine extends Thread {
         int i = topPlayer.getIndex();
         List<Card> playedCards = Arrays.asList(new Card[]{null, null, null, null});
 
+        sendPlayedCard(playedCards, (i == 0 ? 3 : i - 1), true);
         System.out.println(topPlayer.getName() + " has to play");
 
         for (int turn = 0; turn < 4; turn++) {
@@ -92,15 +94,13 @@ public class GameEngine extends Thread {
                 topPlayer = player;
             }
 
-          /*  for (Card c : playedCards)
-                System.out.println(c);
-*/
-            sendPlayedCard(playedCards, i);
+            sendPlayedCard(playedCards, i, false);
             i = (i + 1) % 4;
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
         }
         roundTrump = Trump.NOTHING;
+        TimeUnit.SECONDS.sleep(1);
         System.out.println(topPlayer.getName() + "(" + topPlayer.getTeam() + ") won the round with " + strongestCard.toString() + "\n");
         topPlayer.setPoints(topPlayer.getPoints() + 1);
     }
@@ -133,13 +133,13 @@ public class GameEngine extends Thread {
         }
 
         try {
-            resetHand();
+            resetHand(true);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void resetHand() throws IOException {
+    private void resetHand(boolean firstTime) throws IOException {
         int indexTrump = masterTrump.ordinal();
 
         // Change MasterTrump following the round
@@ -164,14 +164,14 @@ public class GameEngine extends Thread {
         Collections.shuffle(deck);
         for (int i = 0; i < 4; ++i) {
             players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
-            players.get(i).connected(players.get(i).getDeck(), i, masterTrump, whosHand);
+            players.get(i).connected(players.get(i).getDeck(), i, masterTrump, firstTime);
         }
     }
 
-    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed) {
+    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, boolean first) {
         for (Player p : players) {
             try {
-                p.sendPlayedCard(playedCards, whoHasPlayed);
+                p.sendPlayedCard(playedCards, whoHasPlayed, first);
             } catch (IOException e) {
                 e.printStackTrace();
             }

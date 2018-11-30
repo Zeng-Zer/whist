@@ -14,8 +14,8 @@ public class Message implements Serializable {
     // CLIENT
     private Card card;
     private int indexPlayer;
-    private int whosHand;
     private int whoHasPlayed;
+    private boolean firstTime;
 
     /**
      * Server Message constructor
@@ -27,22 +27,19 @@ public class Message implements Serializable {
         this.player = player;
     }
 
-    public Message(Command command, List<Card> deck, int index, Trump masterTrump, int whosHand) {
+    public Message(Command command, List<Card> deck, int index, Trump masterTrump, boolean firstTime) {
         this.command = command;
         this.deck = deck;
         this.indexPlayer = index;
         this.masterTrump = masterTrump;
-        this.whosHand = whosHand;
+        this.firstTime = firstTime;
     }
 
-    public Message(Command command, List<Card> playedCards, int whoHasPlayed) {
+    public Message(Command command, List<Card> playedCards, int whoHasPlayed, boolean firstTime) {
         this.command = command;
         this.playedCards = playedCards;
-        System.out.println("FROM MESSAGE: ");
-        for (Card c : this.playedCards) {
-            System.out.println(c);
-        }
         this.whoHasPlayed = whoHasPlayed;
+        this.firstTime = firstTime;
     }
 
     public Message(Command command) {
@@ -62,10 +59,6 @@ public class Message implements Serializable {
     }
 
     public List<Card> getPlayedCards() {
-        System.out.println("FROM GETTER: ");
-        for (Card c : this.playedCards) {
-            System.out.println(c);
-        }
         return playedCards;
     }
 
@@ -97,7 +90,7 @@ public class Message implements Serializable {
         return whoHasPlayed;
     }
 
-    public int getWhosHand() {
-        return whosHand;
+    public boolean isFirstTime() {
+        return firstTime;
     }
 }
