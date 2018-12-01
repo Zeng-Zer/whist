@@ -78,8 +78,12 @@ public class GameEngine extends Thread {
         Player player;
         int i = topPlayer.getIndex();
         List<Card> playedCards = Arrays.asList(new Card[]{null, null, null, null});
+        List<Integer> points = Arrays.asList(new Integer[]{players.get(0).getPoints(), teamScore.get(0),
+                players.get(1).getPoints(), teamScore.get(1),
+                players.get(2).getPoints(), teamScore.get(0),
+                players.get(3).getPoints(), teamScore.get(1)});
 
-        sendPlayedCard(playedCards, (i == 0 ? 3 : i - 1), true);
+        sendPlayedCard(playedCards, (i == 0 ? 3 : i - 1), points, true);
         System.out.println(topPlayer.getName() + " has to play");
 
         for (int turn = 0; turn < 4; turn++) {
@@ -94,7 +98,7 @@ public class GameEngine extends Thread {
                 topPlayer = player;
             }
 
-            sendPlayedCard(playedCards, i, false);
+            sendPlayedCard(playedCards, i, points, false);
             i = (i + 1) % 4;
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
@@ -168,10 +172,10 @@ public class GameEngine extends Thread {
         }
     }
 
-    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, boolean first) {
+    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, List<Integer> points, boolean first) {
         for (Player p : players) {
             try {
-                p.sendPlayedCard(playedCards, whoHasPlayed, first);
+                p.sendPlayedCard(playedCards, whoHasPlayed, points, first);
             } catch (IOException e) {
                 e.printStackTrace();
             }

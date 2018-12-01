@@ -130,11 +130,11 @@ public class GameInterface extends JPanel {
     private void drawPlayerIcon(int i, int anchor, int gridx, int gridy, int top, int left, int bottom, int right) {
         if (actives[i].getIcon() == null)
             actives[i].setIcon(new ImageIcon("resources/player.png"));
-    /*    actives[i].setText(name + ": " + points);
+        actives[i].setText("<html>Points: "+ p.scores.get(i * 2) + "<br/>Team score: " + p.scores.get(i * 2 + 1) + "</html>");
         actives[i].setHorizontalTextPosition(JLabel.CENTER);
         actives[i].setVerticalTextPosition(JLabel.BOTTOM);
-    */    this.add(actives[i],  new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.1, anchor,
-                GridBagConstraints.NONE, new Insets(top, left, bottom, right), 0, 0));
+        this.add(actives[i],  new GridBagConstraints(gridx, gridy, 1, 1, 0.1, 0.1, anchor,
+                GridBagConstraints.NONE, new Insets(top, left, bottom, right), 70, 100));
     }
 
     public void draw() {
@@ -149,7 +149,7 @@ public class GameInterface extends JPanel {
         playerCard.removeAll();
         center.removeAll();
 
-        drawPlayerIcon(index, GridBagConstraints.LINE_END, 1, 3, 60, 0, 0,10);
+        drawPlayerIcon(index, GridBagConstraints.LINE_END, 1, 3, 30, 0, 0,10);
 
         drawTrump(0, Trump.HEART, GridBagConstraints.EAST, 4, 0, -70, 10);
         drawTrump(1, Trump.SPADE, GridBagConstraints.LINE_END, 4, 4, 0, 0);
@@ -180,17 +180,17 @@ public class GameInterface extends JPanel {
                 case 0:
                     if (p.playedCard.get(tmpIndex) != null)
                         p.playedCard.get(tmpIndex).button.setLocation(100, 160);
-                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 1, 0, 60, 0, 0,0);
+                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 1, 0, 30, 0, 0,0);
                     break;
                 case 1:
                     if (p.playedCard.get(tmpIndex) != null)
                         p.playedCard.get(tmpIndex).button.setLocation(300, 50);
-                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 3, 0, 60, 10, 0, 0);
+                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_START, 3, 0, 30, 10, 0, 0);
                     break;
                 case 2:
                     if (p.playedCard.get(tmpIndex) != null)
                         p.playedCard.get(tmpIndex).button.setLocation(500, 160);
-                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_END,3, 3, 0, 0, 50,0);
+                    drawPlayerIcon(tmpIndex, GridBagConstraints.LINE_END,3, 3, 0, 0, 20,0);
                     break;
                 default:
                     break;

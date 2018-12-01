@@ -16,6 +16,7 @@ public class Message implements Serializable {
     private int indexPlayer;
     private int whoHasPlayed;
     private boolean firstTime;
+    private List<Integer> points;
 
     /**
      * Server Message constructor
@@ -35,11 +36,12 @@ public class Message implements Serializable {
         this.firstTime = firstTime;
     }
 
-    public Message(Command command, List<Card> playedCards, int whoHasPlayed, boolean firstTime) {
+    public Message(Command command, List<Card> playedCards, int whoHasPlayed, List<Integer> points, boolean firstTime) {
         this.command = command;
         this.playedCards = playedCards;
         this.whoHasPlayed = whoHasPlayed;
         this.firstTime = firstTime;
+        this.points = points;
     }
 
     public Message(Command command) {
@@ -92,5 +94,9 @@ public class Message implements Serializable {
 
     public boolean isFirstTime() {
         return firstTime;
+    }
+
+    public List<Integer> getPoints() {
+        return points;
     }
 }

@@ -28,6 +28,7 @@ public class Player implements Serializable {
     private Trump masterTrump;
     private boolean hasToPlay = false;
     public int[] othersCards = {13, 13, 13, 13};
+    public List<Integer> scores = Arrays.asList(new Integer[]{0, 0, 0, 0, 0, 0, 0, 0});
     public List<Card> playedCard = Arrays.asList(new Card[]{null, null, null, null});
 
     JFrame f;
@@ -47,7 +48,6 @@ public class Player implements Serializable {
     public Player(Socket socket, String name) throws IOException {
         this.socket = socket;
         this.name = name;
-      //  this.socket.setSoTimeout(0);
         this.os = new ObjectOutputStream(socket.getOutputStream());
         this.is = new ObjectInputStream(socket.getInputStream());
     }
@@ -123,6 +123,7 @@ public class Player implements Serializable {
 
                 case CARD_RESPONSE:
                     playedCard = message.getPlayedCards();
+                    scores = message.getPoints();
                     int whoHasPlayed = message.getWhoHasPlayed();
                     for (int i = 0; i < 4; i++)
                         mainPanel.getActives()[i].setIcon(new ImageIcon("resources/player.png"));
@@ -223,9 +224,9 @@ public class Player implements Serializable {
         return name;
     }
 
-    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, boolean firstTime) throws IOException {
+    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, List<Integer> points, boolean firstTime) throws IOException {
         List<Card> newPlayedCards = new ArrayList<>(playedCards);
-        Message message = new Message(Command.CARD_RESPONSE, newPlayedCards, whoHasPlayed, firstTime);
+        Message message = new Message(Command.CARD_RESPONSE, newPlayedCards, whoHasPlayed, points, firstTime);
         os.writeObject(message);
     }
 }
