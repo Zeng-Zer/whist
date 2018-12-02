@@ -99,7 +99,7 @@ public class GameInterface extends JPanel {
                         return;
                     }
                     p.playedCard.set(p.getIndex(), p.getDeck().remove(p.getDeck().indexOf(card)));
-                    System.out.println("Player " + p.getName() + " played: " + card.toString() + ", card left: " + p.getDeck().size());
+                    System.out.println(p.getName() + " played: " + card.toString() + ", card left: " + p.getDeck().size());
                     Message response = new Message(card);
                     try {
                         p.getOs().writeObject(response);

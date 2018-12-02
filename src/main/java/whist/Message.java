@@ -12,6 +12,7 @@ public class Message implements Serializable {
     private Player player;
     private List<Card> deck;
     // CLIENT
+    private String name;
     private Card card;
     private int indexPlayer;
     private int whoHasPlayed;
@@ -36,12 +37,18 @@ public class Message implements Serializable {
         this.firstTime = firstTime;
     }
 
-    public Message(Command command, List<Card> playedCards, int whoHasPlayed, List<Integer> points, boolean firstTime) {
+    public Message(Command command, List<Card> playedCards, int whoHasPlayed, List<Integer> points, String name, boolean firstTime) {
         this.command = command;
         this.playedCards = playedCards;
         this.whoHasPlayed = whoHasPlayed;
         this.firstTime = firstTime;
         this.points = points;
+        this.name = name;
+    }
+
+    public Message(Command command, String name) {
+        this.command = command;
+        this.name = name;
     }
 
     public Message(Command command) {
@@ -98,5 +105,9 @@ public class Message implements Serializable {
 
     public List<Integer> getPoints() {
         return points;
+    }
+
+    public String getName() {
+        return name;
     }
 }

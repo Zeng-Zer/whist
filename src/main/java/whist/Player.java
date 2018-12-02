@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Player implements Serializable {
     private transient Socket socket;
-    private transient ObjectInputStream is;
+    public transient ObjectInputStream is;
     private transient ObjectOutputStream os;
     private List<Card> deck = new ArrayList<>();
     private String name;
@@ -106,10 +106,10 @@ public class Player implements Serializable {
                     deck = sortDeck(message.getDeck());
                     index = message.getIndexPlayer();
                     masterTrump = message.getMasterTrump();
+                    sendName();
                     if (message.isFirstTime())
                         createGUI();
                     break;
-
                 case PLAY:
                     // Initialize variables
                     deck = message.getDeck();
@@ -131,9 +131,10 @@ public class Player implements Serializable {
                         othersCards[whoHasPlayed] -= 1;
                     if ((whoHasPlayed + 1) % 4 == index)
                         mainPanel.getErrorMsg().setText("Your turn");
-                    else
-                        mainPanel.getErrorMsg().setText("Player " + ((whoHasPlayed + 1) % 4 + 1) + " turn's");
+                    else {
+                        mainPanel.getErrorMsg().setText(/*"Player " + ((whoHasPlayed + 1) % 4 + 1)*/ message.getName() + " turn's");
                         mainPanel.getActives()[(whoHasPlayed + 1) % 4].setIcon(new ImageIcon("resources/player-active.png"));
+                    }
                     break;
                 case QUIT:
                     System.out.println("Quit");
@@ -146,12 +147,22 @@ public class Player implements Serializable {
         }
     }
 
+    private void sendName() throws IOException {
+        Message message = new Message(Command.NAME, this.name);
+
+        os.writeObject(message);
+    }
+
     private void draw() {
         mainPanel.draw();
     }
 
     public List<Card> getDeck() {
         return deck;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getName() {
@@ -224,9 +235,9 @@ public class Player implements Serializable {
         return name;
     }
 
-    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, List<Integer> points, boolean firstTime) throws IOException {
+    public void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, List<Integer> points, String name, boolean firstTime) throws IOException {
         List<Card> newPlayedCards = new ArrayList<>(playedCards);
-        Message message = new Message(Command.CARD_RESPONSE, newPlayedCards, whoHasPlayed, points, firstTime);
+        Message message = new Message(Command.CARD_RESPONSE, newPlayedCards, whoHasPlayed, points, name, firstTime);
         os.writeObject(message);
     }
 }

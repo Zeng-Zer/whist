@@ -83,7 +83,7 @@ public class GameEngine extends Thread {
                 players.get(2).getPoints(), teamScore.get(0),
                 players.get(3).getPoints(), teamScore.get(1)});
 
-        sendPlayedCard(playedCards, (i == 0 ? 3 : i - 1), points, true);
+        sendPlayedCard(playedCards, (i == 0 ? 3 : i - 1), points, topPlayer.getName(), true);
         System.out.println(topPlayer.getName() + " has to play");
 
         for (int turn = 0; turn < 4; turn++) {
@@ -97,8 +97,8 @@ public class GameEngine extends Thread {
                 strongestCard = cardPlayed;
                 topPlayer = player;
             }
-
-            sendPlayedCard(playedCards, i, points, false);
+            int j = i;
+            sendPlayedCard(playedCards, i, points, players.get((j + 1) % 4).getName(),  false);
             i = (i + 1) % 4;
 
             System.out.println("\t" + player.getName() + "(" + player.getTeam() + ") has played " + cardPlayed.toString() + " - decksize: " + player.getDeck().size());
@@ -167,15 +167,21 @@ public class GameEngine extends Thread {
         // Split deck
         Collections.shuffle(deck);
         for (int i = 0; i < 4; ++i) {
-            players.get(i).getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
-            players.get(i).connected(players.get(i).getDeck(), i, masterTrump, firstTime);
+            Player p = players.get(i);
+            p.getDeck().addAll(deck.subList(i * 13, i * 13 + 13));
+            p.connected(p.getDeck(), i, masterTrump, firstTime);
+            try {
+                p.setName(((Message) p.is.readObject()).getName());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, List<Integer> points, boolean first) {
+    private void sendPlayedCard(List<Card> playedCards, int whoHasPlayed, List<Integer> points, String name, boolean first) {
         for (Player p : players) {
             try {
-                p.sendPlayedCard(playedCards, whoHasPlayed, points, first);
+                p.sendPlayedCard(playedCards, whoHasPlayed, points, name, first);
             } catch (IOException e) {
                 e.printStackTrace();
             }
