@@ -84,7 +84,7 @@ public class GameInterface extends JPanel {
     }
 
     public void createCards() {
-        Trump roundTrump = p.getRoundTrump();
+       // Trump roundTrump = p.getRoundTrump();
 
         for (Card card : p.getDeck()) {
             card.button.addActionListener(new ActionListener() {
@@ -94,8 +94,9 @@ public class GameInterface extends JPanel {
                         errorMsg.setText("It's not your turn to play");
                         return;
                     }
-                    if (p.isTrumpInDeck(roundTrump) && card.getTrump() != roundTrump) {
-                        errorMsg.setText("You have " + String.valueOf(roundTrump) + " in your deck, you should play it");
+                   // System.out.println("Trump at cards creation: " + roundTrump);
+                    if (p.isTrumpInDeck(p.roundTrump) && card.getTrump() != p.roundTrump) {
+                        errorMsg.setText("You have " + String.valueOf(p.roundTrump) + " in your deck, you should play it");
                         return;
                     }
                     p.playedCard.set(p.getIndex(), p.getDeck().remove(p.getDeck().indexOf(card)));
@@ -106,7 +107,7 @@ public class GameInterface extends JPanel {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    updateUI();
+                    draw();
                     p.setHasToPlay(false);
                 }
             });

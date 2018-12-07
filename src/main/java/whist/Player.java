@@ -24,7 +24,7 @@ public class Player implements Serializable {
     // points in the round
     private int points = 0;
     private int index;
-    private Trump roundTrump;
+    public Trump roundTrump;
     private Trump masterTrump;
     private boolean hasToPlay = false;
     public int[] othersCards = {13, 13, 13, 13};
@@ -69,6 +69,7 @@ public class Player implements Serializable {
     }
 
     public boolean isTrumpInDeck(Trump trump) {
+        System.out.println("TRUMP in function:" + trump);
         for (Card card : deck) {
             if (card.getTrump() == trump) {
                 return true;
@@ -119,6 +120,7 @@ public class Player implements Serializable {
                     hasToPlay = true;
                     mainPanel.getActives()[index].setIcon(new ImageIcon("resources/player-active.png"));
                     roundTrump = message.getTrump();
+                    System.out.println("RoundTrump: " + roundTrump);
                     break;
 
                 case CARD_RESPONSE:
@@ -195,10 +197,6 @@ public class Player implements Serializable {
 
     public Trump getMasterTrump() {
         return masterTrump;
-    }
-
-    public Trump getRoundTrump() {
-        return roundTrump;
     }
 
     public ObjectOutputStream getOs() {
